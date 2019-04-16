@@ -1,8 +1,8 @@
 pandas
 matplotlib
-plotly
 numpy
 nltk
 sklearn
 pyenchant
 jupyter
+nbconvert
