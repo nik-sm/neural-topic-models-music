@@ -87,51 +87,6 @@ def main(n_songs=None):
     print("\tSave DF to pickle...")
     sampleFrame.to_pickle("../data/bagOfWords.pickle")
 
-
-    # TODO - below code needs more work
-    print("Step 4: Word vectors (TODO)")
-    wordSet = set()
-    df['stemmed'] = pd.Series("", index=df.index)
-    for i in range(df.shape[0]):
-        if (i % 1000 == 0):
-            print("{}/{}".format(i+1, df.shape[0]))
-        tokens = nltk.word_tokenize(df.iloc[i]["clean_lyrics"])
-        stems = [stemmer.stem(w) for w in tokens]
-        for s in stems:
-            wordSet.add(s)
-        df.at[i, "stemmed"] = " ".join(stems)
-
-    #vectorizer = CountVectorizer()
-    #X = vectorizer.fit_transform(df["stemmed"]) 
-    #print(X.toarray())
-    #print(vectorizer.get_feature_names())
-
-    stemList = df["stemmed"].tolist()
-
-
-    #len(stemList[0].split(" "))
-
-    vectorizer = CountVectorizer()
-    X = vectorizer.fit_transform([stemList[0]]) 
-
-    xArr = X.toarray()
-
-    #xArr[0].sum()
-
-    #len(np.unique(nltk.word_tokenize(stemList[0])))
-
-    #len(vectorizer.get_feature_names())
-
-    vectors = map(vectorize, stemList)
-
-    #for v in vectors:
-    #    print(v)
-
-
-    #len(vectorList)
-
-    #vectorList
-
 if __name__ == '__main__':
-    main()
-    #main(n_songs=10000)
+    #main()
+    main(n_songs=10000)
