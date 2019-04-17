@@ -1,8 +1,2 @@
 pandas
-matplotlib
-numpy
 nltk
-sklearn
-pyenchant
-jupyter
-nbconvert
