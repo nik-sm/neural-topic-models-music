@@ -46,6 +46,7 @@ hParams = {"doc2VecSize": 300, "epochs":100, "min_count":2}
 
 
 if not os.path.isfile("../data/docCorpus.npy"):
+    print("creating doc corpus")
     df = pd.read_csv("../data/lyrics.csv").dropna(0, subset=["lyrics","genre"])
 
     # In[106]:
@@ -70,9 +71,11 @@ if not os.path.isfile("../data/docCorpus.npy"):
 
 
     corpus = Parallel(n_jobs=4)(delayed(doWork)(song, i) for i, song in enumerate(df["lyrics"].dropna()))
-    np.save("../data/docCorpus.npy")
+    np.save("../data/docCorpus.npy", corpus)
 
-
+else:
+    print("loading doc corpus")
+    corpus = np.load("../data/docCorpus.npy")
 # In[139]:
 
 

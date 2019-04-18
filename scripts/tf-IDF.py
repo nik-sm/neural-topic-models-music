@@ -7,7 +7,10 @@
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.preprocessing import LabelEncoder
 from pipeline import newPipe
-
+import numpy as np
+from helpers import *
+import os
+from pipeline import newPipe
 
 ## Train on Song Corpus
 
