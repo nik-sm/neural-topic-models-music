@@ -1,5 +1,7 @@
 import numpy as np
 import pandas as pd
+from joblib import Parallel, delayed
+import gensim.utils as gu
 
 df = pd.read_csv("../data/lyrics.csv").dropna(0, subset=["lyrics","genre"])
 
