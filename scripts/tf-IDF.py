@@ -16,7 +16,7 @@ from pipeline import newPipe
 
 # In[17]:
 
-hParams = {"mode":"tf-idf"}
+hParams = {"mode":"tf-idf", "max_features":100}
 corpus = np.load("../data/corpus.npy")
 leGenres = np.load("../data/leGenres.npy")
 
@@ -30,7 +30,7 @@ songStringCorpus = [" ".join(song) for song in corpus]
 # In[19]:
 
 
-songVectorizer = TfidfVectorizer()
+songVectorizer = TfidfVectorizer(stop_words="english", max_features=hParams["max_features"])
 songTFIDF = songVectorizer.fit_transform(songStringCorpus)
 
 
