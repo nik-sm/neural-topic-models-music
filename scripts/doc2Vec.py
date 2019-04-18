@@ -72,10 +72,11 @@ if not os.path.isfile("../data/docCorpus.npy"):
 
     corpus = Parallel(n_jobs=4)(delayed(doWork)(song, i) for i, song in enumerate(df["lyrics"].dropna()))
     np.save("../data/docCorpus.npy", corpus)
-
+    stop
 else:
     print("loading doc corpus")
-    corpus = np.load("../data/docCorpus.npy")
+    corpusLi = np.load("../data/docCorpus.npy")
+    corpus = [TaggedDocument(c[0], c[1]) for c in corpusLi]
 # In[139]:
 
 
