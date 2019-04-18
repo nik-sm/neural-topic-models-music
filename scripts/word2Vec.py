@@ -68,7 +68,7 @@ class EpochLogger(CallbackAny2Vec):
 # In[8]:
 
 
-model = Word2Vec(corpus, size=hParams["word2VecSize"], window=hparams["window"], min_count=hParams["min_count"], workers=hParams["workers"] , callbacks=[EpochLogger()])
+model = Word2Vec(corpus, size=hParams["word2VecSize"], window=hParams["window"], min_count=hParams["min_count"], workers=hParams["workers"] , callbacks=[EpochLogger()])
 
 
 # In[9]:
