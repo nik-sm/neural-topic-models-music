@@ -10,14 +10,14 @@ import gensim.utils as gu
 from gensim.test.utils import common_texts
 from gensim.models.doc2vec import Doc2Vec, TaggedDocument
 
-import nltk
-from nltk.stem.porter import *
-from sklearn.feature_extraction.text import CountVectorizer
-from collections import defaultdict
-import string
-from nltk.corpus import stopwords
-import enchant
-from nltk.tokenize import RegexpTokenizer
+# import nltk
+# from nltk.stem.porter import *
+# from sklearn.feature_extraction.text import CountVectorizer
+# from collections import defaultdict
+# import string
+# from nltk.corpus import stopwords
+# import enchant
+# from nltk.tokenize import RegexpTokenizer
 from joblib import Parallel, delayed
 from sklearn.model_selection import train_test_split
 from gensim.test.utils import get_tmpfile
