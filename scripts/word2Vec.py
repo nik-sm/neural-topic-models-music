@@ -109,7 +109,7 @@ assert leGenres.shape[0] == len(corpus)
 
 expPath = makeExpDir()
 
-experimentDict = newPipe(corpusTFIDF)
+experimentDict = newPipe(corpusTFIDF, genres)
 
 np.save(os.path.join(expPath, "LogisticRegressionDict.npy"), experimentDict)
 with open(os.path.join(expPath, "hParams.txt"), "w") as f:
