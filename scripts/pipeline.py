@@ -76,10 +76,10 @@ def newPipe(features, labels, iters=10, max_iter=4000, regularization="l2", mult
                 logReg.fit(xTrain, yTrain)
                 trainProbs = logReg.predict_proba(xTrain)
                 yPred = np.argmax(trainProbs, axis=1)
-                trainF1 = f1_score(yTrain, yPred, average="weighted")
+                trainF1 = f1_score(yTrain, yPred, average="weighted", labels=np.unique(yPred))
                 valProbs = logReg.predict_proba(xVal)
                 valPred = np.argmax(valProbs, axis=1)
-                valF1 = f1_score(yVal, valPred, average="weighted")
+                valF1 = f1_score(yVal, valPred, average="weighted", labels=np.unique(valPred))
                 # store the performance for this c val on this train val split
                 trainRow.append(trainF1)
                 valRow.append(valF1)
@@ -115,7 +115,8 @@ def newPipe(features, labels, iters=10, max_iter=4000, regularization="l2", mult
         testProbs = fullLogReg.predict_proba(xTest)
         dict_i["testProbs"] = testProbs
         # Calculate Test Performance
-        testF1 = f1_score(yTest, np.argmax(testProbs, axis=1), average="weighted")
+        testPreds = np.argmax(testProbs, axis=1)
+        testF1 = f1_score(yTest, testPreds, average="weighted", labels=np.unique(testPreds))
         dict_i["testF1"] = testF1
         experimentDict["iterDict"].append(dict_i)
     return experimentDict
