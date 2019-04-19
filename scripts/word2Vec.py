@@ -3,6 +3,7 @@ import os
 from pipeline import newPipe
 from helpers import *
 from joblib import Parallel, delayed
+from sklearn.utils import resample
 
 
 hParams = {"iters":10,
