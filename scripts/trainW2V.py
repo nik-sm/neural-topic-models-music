@@ -17,7 +17,7 @@ model = Word2Vec(corpus,
     workers=hParams["workers"] ,
     callbacks=[EpochLogger()])
 
-model.save("../model/word2Vec.model")
-model = Word2Vec.load("../model/word2Vec.model")
+model.save("../models/word2Vec.model")
+model = Word2Vec.load("../models/word2Vec.model")
 model.train(corpus, total_examples=model.corpus_count, epochs=hParams["epochs"], callbacks=[EpochLogger()])
-model.save("../data/word2Vec.model")
+model.save("../models/word2Vec.model")

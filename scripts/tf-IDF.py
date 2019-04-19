@@ -10,16 +10,22 @@ from sklearn.utils import resample
 
 hParams = {"mode":"tf-idf",
 "max_features":2000,
-"multi_class":"ovr"}
+"multi_class":"ovr",
+"resample":"all",
+"iters":10}
 
 fullCorpus = np.load("../data/nik/listCorpus.npy")
 fullGenres = np.load("../data/nik/genre.npy")
 
-corpus, leGenres = resample(fullCorpus,
-    fullGenres,
-    replace=False,
-    n_samples=1000,
-    )
+if resample=="all":
+    corpus=fullCorpus
+    leGenres = fullGenres
+else:
+    corpus, leGenres = resample(fullCorpus,
+        fullGenres,
+        replace=False,
+        n_samples=hParams["resample"],
+        )
 
 songStringCorpus = [" ".join(song) for song in corpus]
 
@@ -33,7 +39,7 @@ tfScaler = StandardScaler(with_mean=False)
 songTFIDF = tfScaler.fit_transform(songTFIDF)
 
 expPath = makeExpDir()
-expDict = newPipe(songTFIDF, leGenres, iters=1, multi_class=hParams["multi_class"])
+expDict = newPipe(songTFIDF, leGenres, iters=hParams["iters"], multi_class=hParams["multi_class"])
 np.save(os.path.join(expPath, "LogisticRegressionDict.npy"), expDict)
 with open(os.path.join(expPath, "hParams.txt"), "w") as f:
     for k,v in hParams.items():
