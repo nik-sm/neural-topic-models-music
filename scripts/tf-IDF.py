@@ -17,7 +17,7 @@ hParams = {"mode":"tf-idf",
 fullCorpus = np.load("../data/nik/listCorpus.npy")
 fullGenres = np.load("../data/nik/genre.npy")
 
-if resample=="all":
+if hParams["resample"]=="all":
     corpus=fullCorpus
     leGenres = fullGenres
 else:
