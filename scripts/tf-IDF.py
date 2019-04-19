@@ -33,7 +33,7 @@ songStringCorpus = [" ".join(song) for song in corpus]
 
 songVectorizer = TfidfVectorizer(stop_words="english", max_features=hParams["max_features"])
 songTFIDF = songVectorizer.fit_transform(songStringCorpus)
-tfScaler = StandardScaler()
+tfScaler = StandardScaler(with_mean=False)
 songTFIDF = tfScaler.fit_transform(songTFIDF)
 
 
