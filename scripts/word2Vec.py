@@ -39,7 +39,7 @@ def runExp(features, genres, expNum):
     expPath = makeExpDir()
 
     experimentDict = newPipe(features, genres,
-        iters=hParams[iters],
+        iters=hParams["iters"],
         max_iter=hParams["max_iter"],
         regularization=hParams["regularization"],
         multi_class=hParams["multi_class"])
