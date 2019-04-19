@@ -49,7 +49,7 @@ def runExp(features, genres, expNum):
     hParams["featureDescription"] = featuresDesc[expNum]
     np.save(os.path.join(expPath, "hParams.npy"), hParams)
     with open(os.path.join(expPath, "hParams.txt"), "w") as f:
-        for k,v in hParams:
+        for k,v in hParams.items():
             f.write("{}:{}\n".format(k,v))
 
 Parallel(n_jobs=2)(delayed(runExp)(tup[0], tup[1], i) for i,tup in enumerate(zip(featuresLi, genres)))

@@ -37,7 +37,7 @@ def runExp(features):
     np.save(os.path.join(expPath, "LogisticRegressionDict.npy"), experimentDict)
     np.save(os.path.join(expPath, "hParams.npy"), hParams)
     with open(os.path.join(expPath, "hParams.txt"), "w") as f:
-        for k,v in hParams:
+        for k,v in hParams.items():
             f.write("{}:{}\n".format(k,v))
 
 runExp(features)
