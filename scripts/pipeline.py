@@ -26,7 +26,7 @@ def getMedianModel(li):
     return li[medianIDX][0]
 
 
-def newPipe(features, labels, iters=10, regularization="l2", multi_class="multinomial"):
+def newPipe(features, labels, iters=10, max_iter=4000, regularization="l2", multi_class="multinomial"):
     experimentDict = {}
     # Parameter Grid for hyper-parameter tuning
     paramGrid = {'C': np.logspace(-4, 4, num=10)}
@@ -61,16 +61,16 @@ def newPipe(features, labels, iters=10, regularization="l2", multi_class="multin
             for cNum, c in enumerate(paramGrid["C"]):
                 if multi_class=="multinomial":
                     if regularization == "l2":
-                        logReg = LogisticRegression(max_iter=1000, penalty="l2", class_weight='balanced', C=c, solver='lbfgs',multi_class=multi_class)
+                        logReg = LogisticRegression(max_iter=max_iter, penalty="l2", class_weight='balanced', C=c, solver='lbfgs',multi_class=multi_class)
                     elif regularization == "l1":
-                        logReg = LogisticRegression(max_iter=1000, penalty="l1", class_weight='balanced', C=c, solver='lbfgs',multi_class=multi_class)
+                        logReg = LogisticRegression(max_iter=max_iter, penalty="l1", class_weight='balanced', C=c, solver='lbfgs',multi_class=multi_class)
                     else:
                         assert False, "{} regularization is not supported".format(regularization)
                 elif multi_class=="ovr":
                     if regularization == "l2":
-                        logReg = LogisticRegression(max_iter=1000, solver="lbfgs", penalty="l2", class_weight='balanced', C=c,multi_class=multi_class)
+                        logReg = LogisticRegression(max_iter=max_iter, solver="lbfgs", penalty="l2", class_weight='balanced', C=c,multi_class=multi_class)
                     elif regularization == "l1":
-                        logReg = LogisticRegression(max_iter=1000, solver="lbfgs", penalty="l1", class_weight='balanced', C=c,multi_class=multi_class)
+                        logReg = LogisticRegression(max_iter=max_iter, solver="lbfgs", penalty="l1", class_weight='balanced', C=c,multi_class=multi_class)
                     else:
                         assert False, "{} regularization is not supported".format(regularization)
                 logReg.fit(xTrain, yTrain)
@@ -98,9 +98,9 @@ def newPipe(features, labels, iters=10, regularization="l2", multi_class="multin
         dict_i["cv val f1"] = valRows
         # Retrain model using all train and validation data using optimal C value
         if regularization == "l2":
-            fullLogReg = LogisticRegression(penalty="l2", class_weight='balanced', C=chosenC, solver='lbfgs',multi_class='multinomial')
+            fullLogReg = LogisticRegression(max_iter=max_iter, penalty="l2", class_weight='balanced', C=chosenC, solver='lbfgs',multi_class='multinomial')
         elif regularization == "l1":
-            fullLogReg = LogisticRegression(penalty="l1", class_weight='balanced', C=chosenC, solver='lbfgs',multi_class='multinomial')
+            fullLogReg = LogisticRegression(max_iter=max_iter, penalty="l1", class_weight='balanced', C=chosenC, solver='lbfgs',multi_class='multinomial')
         else:
             assert False, "{} regularization is not supported".format(regularization)
         fullLogReg.fit(xTrainVal, yTrainVal)

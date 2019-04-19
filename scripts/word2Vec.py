@@ -5,27 +5,50 @@ from helpers import *
 from joblib import Parallel, delayed
 
 
+hParams = {"iters":10,
+"max_iter":4000,
+"regularization":"l2",
+"multi_class":"multinomial",
+"subsample":1000
+}
+
 avgFeatures = np.load("../data/nik/word2VecAvgFeatures.npy")
 sumFeatues = np.load("../data/nik/word2VecSumFeatures.npy")
-featuresLi = [avgFeatures, sumFeatues]
-genres = np.load("../data/nik/word2VecGenreLabels.npy")
+allfeaturesLi = [avgFeatures, sumFeatues]
+featuresDesc = ["average of word2Vecs", "sum of word2Vecs"]
+allgenres = np.load("../data/nik/word2VecGenreLabels.npy")
+if hParams["subsample"]=="all":
+    featuresLi=allfeaturesLi
+    genres = [allgenres, allgenres]
+else:
+    featuresLi=[]
+    genres = []
+    for f in allfeaturesLi:
+        f,g = resample(f,
+            allgenres,
+            replace=False,
+            n_samples=hParams["subsample"])
+        featuresLi.append(f)
+        genres.append(g)
 
-hParams = {"word2VecSize":300,
-"window":5,
-"min_count":2,
-"workers":4,
-"epochs":50
-}
+
+
+
 # In[6]:
-def runExp(features):
+def runExp(features, genres, expNum):
     expPath = makeExpDir()
 
-    experimentDict = newPipe(features, genres)
+    experimentDict = newPipe(features, genres,
+        iters=hParams[iters],
+        max_iter=hParams["max_iter"],
+        regularization=hParams["regularization"],
+        multi_class=hParams["multi_class"])
 
     np.save(os.path.join(expPath, "LogisticRegressionDict.npy"), experimentDict)
+    hParams["featureDescription"] = featuresDesc[expNum]
     np.save(os.path.join(expPath, "hParams.npy"), hParams)
     with open(os.path.join(expPath, "hParams.txt"), "w") as f:
         for k,v in hParams:
             f.write("{}:{}\n".format(k,v))
 
-Parallel(n_jobs=2)(delayed(runExp)(features) for features in featuresLi)
+Parallel(n_jobs=2)(delayed(runExp)(tup[0], tup[1], i) for i,tup in enumerate(zip(featuresLi, genres)))
