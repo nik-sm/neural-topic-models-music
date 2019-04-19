@@ -40,7 +40,7 @@ songTFIDF = tfScaler.fit_transform(songTFIDF)
 # In[ ]:
 
 expPath = makeExpDir()
-expDict = newPipe(songTFIDF, leGenres, iters=1, hParams["multi_class"])
+expDict = newPipe(songTFIDF, leGenres, iters=1, multi_class=hParams["multi_class"])
 np.save(os.path.join(expPath, "LogisticRegressionDict.npy"), expDict)
 with open(os.path.join(expPath, "hParams.txt"), "w") as f:
     for k,v in hParams:
