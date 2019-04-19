@@ -87,7 +87,7 @@ model = Word2Vec.load("../data/word2Vec.model")
 
 
 model.train(corpus, total_examples=model.corpus_count, epochs=hParams["epochs"], callbacks=[EpochLogger()])
-
+model.save("../data/word2Vec.model")
 
 vecSums = []
 vecAvg = []
