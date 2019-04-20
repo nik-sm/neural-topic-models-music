@@ -1,0 +1,7 @@
+pandas
+nltk
+torch
+torchvision
+tensorflow
+matplotlib
+gensim

@@ -9,6 +9,8 @@ index,song,year,artist,genre,lyrics
 
 # Output
 
+TODO - this needs updating
+
 Preprocessing produces 2 files:
 
 - "bag_of_words.pickle" 
@@ -26,5 +28,11 @@ Preprocessing produces 2 files:
 python3 -m virtualenv py3
 source py3/bin/activate
 pip install -r requirements
-python preprocess_lyrics.py
+bash run_all.sh
 ```
+
+# TODO
+
+- cite sources for code!
+- Confirm how thetas are extracted for prodLDA in tf_run.py and tf_model.py
+- confirm that word counts and song labels are correct by taking a single song and tracking it from the end all the way back to the beginning
