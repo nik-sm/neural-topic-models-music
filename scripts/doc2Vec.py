@@ -11,10 +11,15 @@ hParams = {"iters":10,
 "multi_class":"multinomial",
 "subsample":10000,
 "mode":"doc2Vec"
+"data":"small"
 }
 
-allfeatures = np.load("../data/nik/d2VFeatures.npy")
-allgenres = np.load("../data/nik/genre.npy")
+if hParams["data"]=="full":
+    allfeatures = np.load("../data/nik/d2VFeatures.npy")
+    allgenres = np.load("../data/nik/genre.npy")
+else:
+    allfeatures = np.load("../data/nik/smalld2VFeatures.npy")
+    allgenres = np.load("../data/nik/smallGenreLabels.npy")
 if hParams["subsample"]=="all":
     features = allfeatures
     genres = allgenres

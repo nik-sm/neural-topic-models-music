@@ -12,13 +12,19 @@ hParams = {"iters":10,
 "multi_class":"multinomial",
 "subsample":10000,
 "mode":"word2Vec"
+"data":"small"
 }
-
-avgFeatures = np.load("../data/nik/word2VecAvgFeatures.npy")
-sumFeatues = np.load("../data/nik/word2VecSumFeatures.npy")
+if hParams["data"]=="full":
+    avgFeatures = np.load("../data/nik/word2VecAvgFeatures.npy")
+    sumFeatues = np.load("../data/nik/word2VecSumFeatures.npy")
+    allgenres = np.load("../data/nik/word2VecGenreLabels.npy")
+else:
+    avgFeatures = np.load("../data/nik/smallword2VecAvgFeatures.npy")
+    sumFeatues = np.load("../data/nik/smallword2VecSumFeatures.npy")
+    allgenres = np.load("../data/nik/smallGenresForListCorpus.npy")
 allfeaturesLi = [avgFeatures, sumFeatues]
 featuresDesc = ["average of word2Vecs", "sum of word2Vecs"]
-allgenres = np.load("../data/nik/word2VecGenreLabels.npy")
+
 if hParams["subsample"]=="all":
     featuresLi=allfeaturesLi
     genres = [allgenres, allgenres]

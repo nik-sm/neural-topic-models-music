@@ -11,10 +11,15 @@ hParams = {"iters":10,
 "multi_class":"multinomial",
 "subsample":10000,
 "mode":"tf-idf"
+"data":"small"
 }
 
-allfeatures = np.load("../data/nik/tfidf.npy").item()
-allgenres = np.load("../data/nik/genre.npy")
+if hParams["data"]=="full":
+    allfeatures = np.load("../data/nik/tfidf.npy").item()
+    allgenres = np.load("../data/nik/genre.npy")
+else:
+    allfeatures = np.load("../data/nik/smalltfidf.npy").item()
+    allgenres = np.load("../data/nik/smallGenresForListCorpus.npy")
 if hParams["subsample"]=="all":
     features = allfeatures
     genres = allgenres

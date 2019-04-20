@@ -4,6 +4,9 @@ from gensim.models.callbacks import CallbackAny2Vec
 
 def makeExpDir():
     expPath = os.path.join("../results/experiments/",strftime("%Y_%m_%d_%H_%M_%S",gmtime()))
+    expPath += "_1"
+    while os.path.isfile(expPath):
+        expPath = expPath[:-1]+expPath[-1]+1
     os.mkdir(expPath)
     return expPath
 
