@@ -10,7 +10,8 @@ hParams = {"iters":10,
 "max_iter":4000,
 "regularization":"l2",
 "multi_class":"multinomial",
-"subsample":1000
+"subsample":10000,
+"mode":"word2Vec"
 }
 
 avgFeatures = np.load("../data/nik/word2VecAvgFeatures.npy")
