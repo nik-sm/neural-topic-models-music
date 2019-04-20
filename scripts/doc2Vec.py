@@ -18,7 +18,7 @@ if hParams["data"]=="full":
     allgenres = np.load("../data/nik/genre.npy")
 else:
     allfeatures = np.load("../data/nik/smalld2VFeatures.npy")
-    allgenres = np.load("../data/nik/smallGenreLabels.npy")
+    allgenres = np.load("../data/nik/smallGenreLabelsEncoded.npy")
 if hParams["subsample"]=="all":
     features = allfeatures
     genres = allgenres

@@ -18,7 +18,7 @@ if hParams["data"]=="full":
     allgenres = np.load("../data/nik/genre.npy")
 else:
     allfeatures = np.load("../data/nik/smalltfidf.npy").item()
-    allgenres = np.load("../data/nik/smallGenresForListCorpus.npy")
+    allgenres = np.load("../data/nik/smallword2VecGenresEncoded.npy")
 if hParams["subsample"]=="all":
     features = allfeatures
     genres = allgenres
