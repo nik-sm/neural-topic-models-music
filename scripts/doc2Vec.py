@@ -10,7 +10,7 @@ hParams = {"iters":10,
 "regularization":"l2",
 "multi_class":"multinomial",
 "subsample":10000,
-"mode":"doc2Vec"
+"mode":"doc2Vec",
 "data":"small"
 }
 

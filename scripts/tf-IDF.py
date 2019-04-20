@@ -10,7 +10,7 @@ hParams = {"iters":10,
 "regularization":"l2",
 "multi_class":"multinomial",
 "subsample":10000,
-"mode":"tf-idf"
+"mode":"tf-idf",
 "data":"small"
 }
 
