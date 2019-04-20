@@ -9,11 +9,16 @@ hParams = {"iters":10,
 "max_iter":4000,
 "regularization":"l2",
 "multi_class":"multinomial",
-"subsample":1000
+"subsample":1000,
+"data":"small"
 }
 
-allfeatures = np.load("../data/nik/tfidf.npy").item()
-allgenres = np.load("../data/nik/genre.npy")
+if hParams["data"]=="full":
+    allfeatures = np.load("../data/nik/tfidf.npy").item()
+    allgenres = np.load("../data/nik/genre.npy")
+else:
+    allfeatures = np.load("../data/nik/smalltfidf.npy").item()
+    allgenres = np.load("../data/nik/smallGenresForListCorpus.npy")
 if hParams["subsample"]=="all":
     features = allfeatures
     genres = allgenres
