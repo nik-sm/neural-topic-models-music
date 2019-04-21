@@ -9,9 +9,8 @@ set -euxo pipefail
 command -v python3 > /dev/null 2>&1 || { echo "Missing Python3 install" >&2 ; exit 1; }
 
 INFILE="data/input/lyrics.csv"
-PRODLDA_OUTDIR_BASE="output/prodlda"
+OUTDIR_BASE="output"
 PRODLDA_THETAS_FILE="theta_needsoftmax.pickle"
-SCHOLAR_OUTDIR_BASE="output/scholar"
 SCHOLAR_THETAS_FILE="theta.train.npz"
 LABEL_FILE="output/bow/full-labels.pickle"
 BOW_OUTDIR="output/bow"
@@ -48,26 +47,28 @@ time python scripts/preprocess_lyrics.py -i data/input/lyrics.csv \
 for PARAMS in n10000k10 n10000k20 ; do
 	N_TOPICS=${PARAMS##n*k}
 
-	test -d ${SCHOLAR_OUTDIR_BASE}/${PARAMS} || { echo "making Scholar output dir"; mkdir -p ${SCHOLAR_OUTDIR_BASE}/${PARAMS}; }
+	OUT=${OUTDIR_BASE}/${PARAMS}/scholar
+	test -d ${OUT} || { echo "making Scholar output dir"; mkdir -p ${OUT}; }
 	# Run Scholar unsupervised (ScholarU)
 	time python scripts/scholar/run_scholar.py ${BOW_OUTDIR} \
-																						 -o ${SCHOLAR_OUTDIR_BASE}/${PARAMS} \
+																						 -o ${OUT} \
 																						 --train-prefix full-bag-of-words \
 																						 -k ${N_TOPICS} \
 																						 --epochs 20
 
 	# Scholar features for classification
-	time python scripts/classify/logr_scholar.py --theta-file ${SCHOLAR_OUTDIR_BASE}/${PARAMS}/${SCHOLAR_THETAS_FILE} \
+	time python scripts/classify/logr_scholar.py --theta-file ${OUT}/${SCHOLAR_THETAS_FILE} \
 																							 --label-file ${LABEL_FILE} \
-																							 --output-dir ${SCHOLAR_OUTDIR_BASE}/${PARAMS}
+																							 --output-dir ${OUT}
 
 # Run Scholar supervised (ScholarS) (classification already performed)
 # time python scripts/run_scholar.py data/bow/ --train-prefix train-bag-of-words --labels data/bow/labels.pickle
 
 	# Run prodLDA
-	test -d ${PRODLDA_OUTDIR_BASE}/${PARAMS} || { echo "making prodLDA output dir"; mkdir -p ${PRODLDA_OUTDIR_BASE}/${PARAMS}; }
+	OUT=${OUTDIR_BASE}/${PARAMS}/prodlda
+	test -d ${OUT} || { echo "making prodLDA output dir"; mkdir -p ${OUT}; }
 	time python scripts/prodlda/tf_run.py -i ${BOW_OUTDIR}/full-bag-of-words.pickle \
-																				-o ${PRODLDA_OUTDIR_BASE}/${PARAMS} \
+																				-o ${OUT} \
 																				-f 100 \
 																				-s 100 \
 																				-e 20 \
@@ -76,9 +77,9 @@ for PARAMS in n10000k10 n10000k20 ; do
 																				-k ${N_TOPICS}
 
 # ProdLDA features for classification
-	time python scripts/classify/logr_prodlda.py --theta-file ${PRODLDA_OUTDIR_BASE}/${PARAMS}/${PRODLDA_THETAS_FILE} \
+	time python scripts/classify/logr_prodlda.py --theta-file ${OUT}/${PRODLDA_THETAS_FILE} \
 																							 --label-file ${LABEL_FILE} \
-																							 --output-dir ${PRODLDA_OUTDIR_BASE}/${PARAMS}
+																							 --output-dir ${OUT}
 
 done
 
