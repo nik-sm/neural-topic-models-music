@@ -33,15 +33,15 @@ time python scripts/preprocess_lyrics.py -i data/input/lyrics.csv \
                                          --songs-per-genre ${SONGS_PER_GENRE}
 
 # Run Scholar unsupervised (ScholarU)
-#time python scripts/scholar/run_scholar.py ${BOW_OUTDIR} \
-#                                           -o ${SCHOLAR_OUTDIR} \
-#                                           --train-prefix full-bag-of-words \
-#                                           -k ${N_TOPICS} \
-#                                           --epochs 20
+time python scripts/scholar/run_scholar.py ${BOW_OUTDIR} \
+                                           -o ${SCHOLAR_OUTDIR} \
+                                           --train-prefix full-bag-of-words \
+                                           -k ${N_TOPICS} \
+                                           --epochs 20
 
 # Scholar features for classification
-#time python scripts/classify/logr_scholar.py --theta-file ${SCHOLAR_THETAS} \
-#                                             --label-file ${LABEL_FILE}
+time python scripts/classify/logr_scholar.py --theta-file ${SCHOLAR_THETAS} \
+                                             --label-file ${LABEL_FILE}
 
 
 # Run Scholar supervised (ScholarS) (classification already performed)
@@ -49,28 +49,28 @@ time python scripts/preprocess_lyrics.py -i data/input/lyrics.csv \
 
 # Run prodLDA
 
-time python scripts/prodlda/pytorch_run.py -i ${BOW_OUTDIR}/full-bag-of-words.pickle \
-                                           -f 100 \
-                                           -s 100 \
-                                           -e 20 \
-                                           -r 0.002 \
-                                           -b 200 \
-                                           -k ${N_TOPICS}
-
-
 test -d ${PRODLDA_OUTDIR} || { echo "making prodLDA output dir"; mkdir -p ${PRODLDA_OUTDIR}; }
-#time python scripts/prodlda/tf_run.py -i ${BOW_OUTDIR}/full-bag-of-words.pickle \
-#                                      -o ${PRODLDA_OUTDIR} \
-#                                      -f 100 \
-#                                      -s 100 \
-#                                      -e 20 \
-#                                      -r 0.002 \
-#                                      -b 200 \
-#                                      -k ${N_TOPICS}
+#time python scripts/prodlda/pytorch_run.py -i ${BOW_OUTDIR}/full-bag-of-words.pickle \
+#                                           -f 100 \
+#                                           -s 100 \
+#                                           -e 20 \
+#                                           -r 0.002 \
+#                                           -b 200 \
+#                                           -k ${N_TOPICS}
+
+
+time python scripts/prodlda/tf_run.py -i ${BOW_OUTDIR}/full-bag-of-words.pickle \
+                                      -o ${PRODLDA_OUTDIR} \
+                                      -f 100 \
+                                      -s 100 \
+                                      -e 20 \
+                                      -r 0.002 \
+                                      -b 200 \
+                                      -k ${N_TOPICS}
 
 # ProdLDA features for classification
-#time python scripts/classify/logr_prodlda.py --theta-file ${PRODLDA_THETAS} \
-#                                             --label-file ${LABEL_FILE}
+time python scripts/classify/logr_prodlda.py --theta-file ${PRODLDA_THETAS} \
+                                             --label-file ${LABEL_FILE}
 
 
 #time python scripts/tf_run.py -f 100 -s 100 -e 300 -r 0.002 -b 20 -t 50

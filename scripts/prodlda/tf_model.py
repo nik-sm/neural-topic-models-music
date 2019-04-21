@@ -66,9 +66,9 @@ class VAE(object):
         en2 = slim.layers.linear(en1,    self.network_architecture['n_hidden_recog_2'], scope='FC_en2')
         en2 = tf.nn.softplus(en2, name='softplus2')
         en2_do = slim.layers.dropout(en2, self.keep_prob, scope='en2_dropped')
-        self.posterior_mean   = slim.layers.linear(en2_do, self.network_architecture['n_z'], scope='FC_mean')
+        self.posterior_mean_raw   = slim.layers.linear(en2_do, self.network_architecture['n_z'], scope='FC_mean')
         self.posterior_logvar = slim.layers.linear(en2_do, self.network_architecture['n_z'], scope='FC_logvar')
-        self.posterior_mean   = slim.layers.batch_norm(self.posterior_mean, scope='BN_mean')
+        self.posterior_mean   = slim.layers.batch_norm(self.posterior_mean_raw, scope='BN_mean')
         self.posterior_logvar = slim.layers.batch_norm(self.posterior_logvar, scope='BN_logvar')
 
         with tf.name_scope('z_scope'):
@@ -128,9 +128,17 @@ class VAE(object):
         #        theta = self.sess.run((self.z),feed_dict={self.x: X[(i * batch_size) : ((i+1) * batch_size)], self.keep_prob: 1.0})
         #    else:
         #        theta = np.concatenate((theta, self.sess.run((self.z),feed_dict={self.x: X[(i * batch_size) : ((i+1) * batch_size)], self.keep_prob: 1.0})), axis = 0)
+        #thetas = self.sess.run((self.z),feed_dict={self.x: np.expand_dims(X, axis=0),self.keep_prob: 1.0})
+        #print("thetas.shape", thetas.shape)
+        #print("thetas", thetas)
         thetas=[]
         for i in range(len(X)):
-            thetas.append(np.mean(self.sess.run((self.z),feed_dict={self.x: np.expand_dims(X[i], axis=0),self.keep_prob: 1.0}), axis=1))
+            tmp = self.sess.run((self.posterior_mean_raw),feed_dict={self.x: np.expand_dims(X[i], axis=0),self.keep_prob: 1.0})
+            #print("tmp.shape:", tmp.shape)
+            #print("X[i]:\n",X[i])
+            #print("Iteration: {}, thetas: \n{}".format(i, tmp))
+            thetas.append( np.mean( tmp , axis=0))
+
         #theta_ = self.sess.run((self.z),feed_dict={self.x: np.expand_dims(X, axis=0),self.keep_prob: 1.0})
         #theta_ = self.sess.run((self.z),feed_dict={self.x: X, self.keep_prob: 1.0})
-        return np.asanyarray(thetas)
+        return thetas
