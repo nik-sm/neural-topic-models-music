@@ -5,3 +5,4 @@ torchvision
 tensorflow
 matplotlib
 gensim
+sklearn

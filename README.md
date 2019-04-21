@@ -25,7 +25,7 @@ From the entire corpus:
 	- Each row represents one song, showing the count of each word.
 -	`full-labels.pickle`
 	- This associates the unique song numbers with other song labels
-	- The header is: ["index", "song", "year", "artist", "genre"]
+	- The header is: ["index", "genre"]
 -	`genre-number-mapping.pickle`
 	- This associates the numeric genre to the original genre string
 

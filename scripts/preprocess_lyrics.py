@@ -30,7 +30,7 @@ def stem_and_count(song, stopwordsSet, stemmer):
 
 def init_gen(df, stop, stem):
     print("\tUsing all songs")
-    for index, song in df[["index","lyrics"]].iterrows():
+    for index, song in df[["INDEX","lyrics"]].iterrows():
         yield (index, stem_and_count(song=song["lyrics"], stopwordsSet=stop, stemmer=stem)) 
 
 def main(vocab_size=2000):
@@ -49,6 +49,7 @@ def main(vocab_size=2000):
     print("Begin data cleaning with arguments: ", parsed_args)
 
     input_df = pd.read_csv(infile)
+    input_df.rename(columns={'index':'INDEX'}, inplace=True)
 
     print("Step 0: Drop songs without lyrics. Subset by genre, and down/upsample")
     chosen_genres = ["Rock","R&B","Pop","Metal","Jazz","Indie","Hip-Hop","Folk","Electronic","Country"]
@@ -108,8 +109,8 @@ def main(vocab_size=2000):
     with open(os.path.join(outdir, "genre-number-mapping.pickle"), "wb") as f:
         pickle.dump(genre_to_number, f)
     
-    full_labels = input_df[(input_df.index.isin(bag_of_words_df["INDEX"]))][["index","genre"]] \
-                    .replace({"genre": genre_to_number})
+    full_labels = input_df[["INDEX","genre"]].replace({"genre": genre_to_number})
+    #full_labels = input_df.replace({"genre": genre_to_number})["genre"]
 
     print("\tfull-labels.pickle")
     full_labels.to_pickle(os.path.join(outdir,"full-labels.pickle"))

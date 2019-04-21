@@ -121,14 +121,16 @@ class VAE(object):
     def topic_prop(self, batch_size, X):
         """theta_ is the topic proportion vector. Apply softmax transformation to it before use.
         """
-        n_batches = int(len(X) / batch_size) #Possibly missing a few items in the final batch if not divisible
-        theta = []
-        for i in range(n_batches):
-            if i == 0:
-                theta = self.sess.run((self.z),feed_dict={self.x: X[(i * batch_size) : ((i+1) * batch_size)], self.keep_prob: 1.0})
-            else:
-                theta = np.concatenate((theta, self.sess.run((self.z),feed_dict={self.x: X[(i * batch_size) : ((i+1) * batch_size)], self.keep_prob: 1.0})), axis = 0)
-        #theta_ = self.sess.run((self.z),feed_dict={self.x: np.expand_dims(X[0], axis=0),self.keep_prob: 1.0})
+        #n_batches = int(len(X) / batch_size) #Possibly missing a few items in the final batch if not divisible
+        #theta = []
+        #for i in range(n_batches):
+        #    if i == 0:
+        #        theta = self.sess.run((self.z),feed_dict={self.x: X[(i * batch_size) : ((i+1) * batch_size)], self.keep_prob: 1.0})
+        #    else:
+        #        theta = np.concatenate((theta, self.sess.run((self.z),feed_dict={self.x: X[(i * batch_size) : ((i+1) * batch_size)], self.keep_prob: 1.0})), axis = 0)
+        thetas=[]
+        for i in range(len(X)):
+            thetas.append(np.mean(self.sess.run((self.z),feed_dict={self.x: np.expand_dims(X[i], axis=0),self.keep_prob: 1.0}), axis=1))
         #theta_ = self.sess.run((self.z),feed_dict={self.x: np.expand_dims(X, axis=0),self.keep_prob: 1.0})
         #theta_ = self.sess.run((self.z),feed_dict={self.x: X, self.keep_prob: 1.0})
-        return theta
+        return np.asanyarray(thetas)
