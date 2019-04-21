@@ -9,12 +9,18 @@ set -euxo pipefail
 command -v python3 > /dev/null 2>&1 || { echo "Missing Python3 install" >&2 ; exit 1; }
 
 INFILE="data/input/lyrics.csv"
-PRODLDA_OUTDIR="output/prodlda"
-PRODLDA_THETAS="output/prodlda/theta_needsoftmax.pickle"
-SCHOLAR_OUTDIR="output/scholar"
-SCHOLAR_THETAS="output/scholar/theta.train.npz"
+PRODLDA_OUTDIR_BASE="output/prodlda"
+PRODLDA_THETAS_FILE="theta_needsoftmax.pickle"
+SCHOLAR_OUTDIR_BASE="output/scholar"
+SCHOLAR_THETAS_FILE="theta.train.npz"
 LABEL_FILE="output/bow/full-labels.pickle"
 BOW_OUTDIR="output/bow"
+#PLOTS_DIR="output/plots"
+#ACCURACY_VS_DIM_RESULTS=${PLOTS_DIR}/"accuracy_vs_dimension.txt"
+# CSV with:
+# model,dimension,accuracy
+
+# n=10000, k 
 
 # Docker run with environment variables:
 if [ -z $SONGS_PER_GENRE ]; then
@@ -28,54 +34,56 @@ fi
 # Should be passed as environment variable
 test -f ${INFILE} || { echo "Missing input file!" ; exit 1; }
 test -d ${BOW_OUTDIR} || { echo "Making bow directory"; mkdir -p ${BOW_OUTDIR}; }
+#test -d ${PLOTS_DIR} || { echo "Making plots directory"; mkdir -p ${PLOTS_DIR}; }
 time python scripts/preprocess_lyrics.py -i data/input/lyrics.csv \
                                          -o ${BOW_OUTDIR} \
                                          --songs-per-genre ${SONGS_PER_GENRE}
 
-# Run Scholar unsupervised (ScholarU)
-time python scripts/scholar/run_scholar.py ${BOW_OUTDIR} \
-                                           -o ${SCHOLAR_OUTDIR} \
-                                           --train-prefix full-bag-of-words \
-                                           -k ${N_TOPICS} \
-                                           --epochs 20
 
-# Scholar features for classification
-time python scripts/classify/logr_scholar.py --theta-file ${SCHOLAR_THETAS} \
-                                             --label-file ${LABEL_FILE}
+# See "substring removal": https://www.tldp.org/LDP/abs/html/string-manipulation.html
+# a="n10000k20"
+# echo ${a##n*k}
+#for PARAMS in n10000k10 n10000k20 n10000k50 n10000k100 n10000k300; do
+# NOTE no comma
+for PARAMS in n10000k10 n10000k20 ; do
+	N_TOPICS=${PARAMS##n*k}
 
+	test -d ${SCHOLAR_OUTDIR_BASE}/${PARAMS} || { echo "making Scholar output dir"; mkdir -p ${SCHOLAR_OUTDIR_BASE}/${PARAMS}; }
+	# Run Scholar unsupervised (ScholarU)
+	time python scripts/scholar/run_scholar.py ${BOW_OUTDIR} \
+																						 -o ${SCHOLAR_OUTDIR_BASE}/${PARAMS} \
+																						 --train-prefix full-bag-of-words \
+																						 -k ${N_TOPICS} \
+																						 --epochs 20
+
+	# Scholar features for classification
+	time python scripts/classify/logr_scholar.py --theta-file ${SCHOLAR_OUTDIR_BASE}/${PARAMS}/${SCHOLAR_THETAS_FILE} \
+																							 --label-file ${LABEL_FILE} \
+																							 --output-dir ${SCHOLAR_OUTDIR_BASE}/${PARAMS}
 
 # Run Scholar supervised (ScholarS) (classification already performed)
 # time python scripts/run_scholar.py data/bow/ --train-prefix train-bag-of-words --labels data/bow/labels.pickle
 
-# Run prodLDA
-
-test -d ${PRODLDA_OUTDIR} || { echo "making prodLDA output dir"; mkdir -p ${PRODLDA_OUTDIR}; }
-#time python scripts/prodlda/pytorch_run.py -i ${BOW_OUTDIR}/full-bag-of-words.pickle \
-#                                           -f 100 \
-#                                           -s 100 \
-#                                           -e 20 \
-#                                           -r 0.002 \
-#                                           -b 200 \
-#                                           -k ${N_TOPICS}
-
-
-time python scripts/prodlda/tf_run.py -i ${BOW_OUTDIR}/full-bag-of-words.pickle \
-                                      -o ${PRODLDA_OUTDIR} \
-                                      -f 100 \
-                                      -s 100 \
-                                      -e 20 \
-                                      -r 0.002 \
-                                      -b 200 \
-                                      -k ${N_TOPICS}
+	# Run prodLDA
+	test -d ${PRODLDA_OUTDIR_BASE}/${PARAMS} || { echo "making prodLDA output dir"; mkdir -p ${PRODLDA_OUTDIR_BASE}/${PARAMS}; }
+	time python scripts/prodlda/tf_run.py -i ${BOW_OUTDIR}/full-bag-of-words.pickle \
+																				-o ${PRODLDA_OUTDIR_BASE}/${PARAMS} \
+																				-f 100 \
+																				-s 100 \
+																				-e 20 \
+																				-r 0.002 \
+																				-b 200 \
+																				-k ${N_TOPICS}
 
 # ProdLDA features for classification
-time python scripts/classify/logr_prodlda.py --theta-file ${PRODLDA_THETAS} \
-                                             --label-file ${LABEL_FILE}
+	time python scripts/classify/logr_prodlda.py --theta-file ${PRODLDA_OUTDIR_BASE}/${PARAMS}/${PRODLDA_THETAS_FILE} \
+																							 --label-file ${LABEL_FILE} \
+																							 --output-dir ${PRODLDA_OUTDIR_BASE}/${PARAMS}
 
+done
 
 #time python scripts/tf_run.py -f 100 -s 100 -e 300 -r 0.002 -b 20 -t 50
 
-# TODO - left off here 4/19 7pm
 exit 1
 
 # Generate TF/IDF Features
