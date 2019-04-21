@@ -10,9 +10,6 @@ import itertools,time
 from collections import OrderedDict
 from copy import deepcopy
 from time import time
-import matplotlib
-matplotlib.use('TkAgg')
-import matplotlib.pyplot as plt
 import pickle
 import sys, getopt
 from tf_model import VAE
