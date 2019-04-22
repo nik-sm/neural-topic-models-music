@@ -40,7 +40,9 @@ fi
 #  $N_TOPICS=20
 #fi
 
-TIMESTAMP="$(date +"%Y_%m_%d")_$$"
+# NOTE - docker pid always 1
+#TIMESTAMP="$(date +"%Y_%m_%d")_$$"
+TIMESTAMP="$(date +"%Y_%m_%d_%s")"
 echo ${TIMESTAMP}
 
 echo "##################################"

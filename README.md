@@ -55,3 +55,8 @@ time docker run -e SONGS_PER_GENRE=30 -v $(pwd)/output/:/music/output/ music-pip
 - confirm that word counts and song labels are correct by taking a single song and tracking it from the end all the way back to the beginning
 - ADAM instead of LBFGS?
 - Consolidate other repos? https://github.com/xyzzzfred/scholar.git, https://github.com/nik-sm/pytorch-avitm
+- add a "dry-run" mode that generates the command line invocations, so that individual steps could be run by hand, by doing:
+	```bash
+	alias python=/bin/echo
+	alias echo=#
+	```
