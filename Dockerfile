@@ -3,7 +3,7 @@ FROM python:3.7 as PythonBase
 # Python Libraries
 WORKDIR /music
 COPY requirements.txt /music/
-RUN pip install -r requirements.txt
+RUN pip install -r frozen_requirements.txt
 
 # Data and Scripts
 COPY data /music/data

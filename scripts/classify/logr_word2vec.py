@@ -16,13 +16,13 @@ def main():
     print("Running logr_word2vec with arguments: ", args)
 
     model=Word2Vec.load(args.model)
-    full_labels=np.load(args.label_file)
+    full_labels=np.load(args.label_file, allow_pickle=True)
 
     # get average word vector for each song
 
     n_total_words = 0
     n_dropped_words = 0
-    corpus = np.load(args.corpus)
+    corpus = np.load(args.corpus, allow_pickle=True)
     avg_vectors = []
     for song in corpus:
         n_total_words += len(song)

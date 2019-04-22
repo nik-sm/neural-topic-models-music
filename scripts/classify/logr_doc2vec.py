@@ -15,7 +15,7 @@ def main():
     print("Running logr_doc2vec with arguments: ", args)
 
     model=Doc2Vec.load(args.model)
-    full_labels=np.load(args.label_file)
+    full_labels=np.load(args.label_file, allow_pickle=True)
 
     doc_vectors = []
     for i in range(len(full_labels)):

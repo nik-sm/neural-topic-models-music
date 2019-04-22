@@ -45,7 +45,8 @@ docker build -t music-pipeline .
 
 ## Run Docker Container
 ```bash
-docker run -e SONGS_PER_GENRE=100 -v $(pwd)/output/:/music/output/ music-pipeline
+time docker run -e SONGS_PER_GENRE=30 -v $(pwd)/output/:/music/output/ music-pipeline
+
 ```
 
 # TODO
