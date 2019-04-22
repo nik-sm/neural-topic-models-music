@@ -33,8 +33,10 @@ def main():
 
     data_train,data_test,labels_train,labels_test = train_test_split(full_data, full_labels, test_size=0.2)
     clf = LogisticRegression(random_state=0, solver='lbfgs',multi_class='multinomial').fit(data_train, labels_train)
+    accuracy = str(clf.score(data_test, labels_test))
+    print("SCHOLAR ACCURACY: ", accuracy)
     with open(os.path.join(args.output_dir,"accuracy.txt"), 'w') as f:
-        f.write(str(clf.score(data_test, labels_test)))
+        f.write(accuracy)
     weights = clf.coef_
     np.savetxt(os.path.join(args.output_dir,"weights.txt"), weights)
 

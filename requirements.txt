@@ -6,3 +6,4 @@ tensorflow
 matplotlib
 gensim
 sklearn
+joblib
