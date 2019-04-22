@@ -77,7 +77,7 @@ for PARAMS in n10000k300 n10000k100 n10000k50 n10000k20 n10000k10; do
 																						 -o ${OUT} \
 																						 --train-prefix full \
 																						 -k ${N_TOPICS} \
-																						 --epochs 40
+																						 --epochs 100
 
 
 	echo "##################################"
@@ -101,7 +101,7 @@ for PARAMS in n10000k300 n10000k100 n10000k50 n10000k20 n10000k10; do
 																						 --test-prefix "test" \
 																						 --label genre \
 																						 -k ${N_TOPICS} \
-																						 --epochs 40
+																						 --epochs 100
 
 	echo "##################################"
 	echo "scripts/prodlda/tf_run.py"
@@ -112,7 +112,7 @@ for PARAMS in n10000k300 n10000k100 n10000k50 n10000k20 n10000k10; do
 																				-o ${OUT} \
 																				-f 100 \
 																				-s 100 \
-																				-e 40 \
+																				-e 100 \
 																				-r 0.002 \
 																				-b 200 \
 																				-k ${N_TOPICS}

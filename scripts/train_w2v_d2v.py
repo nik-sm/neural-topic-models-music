@@ -31,7 +31,7 @@ def main():
             "window":5,
             "min_count":2,
             "workers":4,
-            "epochs": 40
+            "epochs": 100
     }
 
     model = Word2Vec(sentences=corpus, 
@@ -50,7 +50,7 @@ def main():
     print("Begin Doc2Vec...")
     hParams = {
             "doc2VecSize" : args.dimension,
-            "epochs" : 40,
+            "epochs" : 100,
             "min_count" : 2
     }
 
