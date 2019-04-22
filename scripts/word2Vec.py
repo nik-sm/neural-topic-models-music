@@ -4,16 +4,28 @@ from pipeline import newPipe
 from helpers import *
 from joblib import Parallel, delayed
 from sklearn.utils import resample
+from logRegNoCross import noCrossPipe
 
 
-hParams = {"iters":10,
+# hParams = {"iters":10,
+# "max_iter":4000,
+# "regularization":"l2",
+# "multi_class":"multinomial",
+# "subsample":10000,
+# "mode":"word2Vec",
+# "data":"small"
+# }
+
+hParams = {"iters":1,
 "max_iter":4000,
 "regularization":"l2",
 "multi_class":"multinomial",
 "subsample":10000,
 "mode":"word2Vec",
-"data":"small"
+"data":"small",
+"pipe":"noCross"
 }
+
 if hParams["data"]=="full":
     avgFeatures = np.load("../data/nik/word2VecAvgFeatures.npy")
     sumFeatures = np.load("../data/nik/word2VecSumFeatures.npy")
@@ -45,12 +57,18 @@ else:
 # In[6]:
 def runExp(features, genres, expNum):
     expPath = makeExpDir()
-
-    experimentDict = newPipe(features, genres,
-        iters=hParams["iters"],
-        max_iter=hParams["max_iter"],
-        regularization=hParams["regularization"],
-        multi_class=hParams["multi_class"])
+    if hParams["pipe"] == "cross":
+        experimentDict = newPipe(features, genres,
+            iters=hParams["iters"],
+            max_iter=hParams["max_iter"],
+            regularization=hParams["regularization"],
+            multi_class=hParams["multi_class"])
+    elif hParams["pipe"]=="noCross":
+        experimentDict = noCrossPipe(features, genres,
+            iters=hParams["iters"],
+            max_iter=hParams["max_iter"],
+            regularization=hParams["regularization"],
+            multi_class=hParams["multi_class"])
 
     np.save(os.path.join(expPath, "LogisticRegressionDict.npy"), experimentDict)
     hParams["featureDescription"] = featuresDesc[expNum]
