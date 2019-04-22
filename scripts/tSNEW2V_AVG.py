@@ -6,4 +6,4 @@ avgFeatures = np.load("../data/nik/word2VecAvgFeatures.npy")
 
 X_embedded = TSNE(n_components=2).fit_transform(avgFeatures)
 
-np.save("X_embedded")
+np.save("../results/tSNE_w2v_avg.npy")

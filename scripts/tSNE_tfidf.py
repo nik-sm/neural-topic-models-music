@@ -4,6 +4,6 @@ import numpy as np
 
 allfeatures = np.load("../data/nik/tfidf.npy").item()
 
-X_embedded = TSNE(n_components=2).fit_transform(allfeatures)
+X_embedded = TSNE(n_components=2).fit_transform(allfeatures.toarray())
 
-np.save("X_embedded")
+np.save("../results/tSNE_tfidf.npy")
