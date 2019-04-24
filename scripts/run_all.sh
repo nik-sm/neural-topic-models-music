@@ -11,7 +11,22 @@ set -euxo pipefail
 	#TypeError: object of type 'int' has no len()
 
 
+#DRY_RUN=
+#if [ "$#" -eq 1 ]; then
+#	if [ "$1" == "dryrun" ]; then
+#		shopt -s expand_aliases
+#		alias python="/bin/echo"
+#		alias echo="#"
+#		DRY_RUN=1
+#		python foobar
+#		echo barfoo
+#		#if [ -n ${DRY_RUN} ]; then
+#		#	echo "DRY RUN"
+#		#fi
+#	fi
+#fi
 
+exit 1
 
 echo "##################################"
 echo "BEGIN PIPELINE"
@@ -60,7 +75,7 @@ time python scripts/preprocess_lyrics.py -i data/input/lyrics.csv \
 # echo ${a##n*k}
 # NOTE no comma
 
-for PARAMS in w5000n5000k300 w5000n5000k100 w5000n5000k50 w5000n5000k20 w5000n5000k10; do
+#for PARAMS in w5000n5000k300 w5000n5000k100 w5000n5000k50 w5000n5000k20 w5000n5000k10; do
 for PARAMS in w5000n5000k100; do
 	OUTDIR_BASE="output/${TIMESTAMP}"
 	N_TOPICS=${PARAMS##n*k}

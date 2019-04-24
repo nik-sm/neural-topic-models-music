@@ -69,6 +69,12 @@ def main(args):
                       help='GPU to use: default=%default')
     parser.add_option('--seed', type=int, default=None,
                       help='Random seed: default=%default')
+    parser.add_option('--classification_loss_coef', type=float, default=1.0,
+                      help='coef for classification loss in training')
+    parser.add_option('--reconstr_loss_coef', type=float, default=1.0,
+                      help='coef for reconstruction loss in training')
+    parser.add_option('--kl_loss_coef', type=float, default=1.0,
+                      help='coef for kl divergence loss in training')
 
     options, args = parser.parse_args(args)
 
@@ -398,6 +404,9 @@ def make_network(options, vocab_size, label_type=None, n_labels=0, n_prior_covar
              l2_prior_reg=options.l2_prior_covars,
              classifier_layers=1,
              use_interactions=options.interactions,
+             classification_loss_coef=options.classification_loss_coef,
+             reconstr_loss_coef=options.reconstr_loss_coef,
+             kl_loss_coef=options.kl_loss_coef
              )
     return network_architecture
 
