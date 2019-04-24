@@ -1,2 +1,7 @@
 output/*
 py3/*
+data/*
+!data/input/lyrics.csv
+results/*
+!data/nltk_packages/*
+models/*
