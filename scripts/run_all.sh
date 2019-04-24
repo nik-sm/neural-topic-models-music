@@ -29,8 +29,8 @@ command -v python3 > /dev/null 2>&1 || { echo "Missing Python3 install" >&2 ; ex
 INFILE="data/input/lyrics.csv"
 PRODLDA_THETAS_FILE="theta_needsoftmax.pickle"
 SCHOLAR_THETAS_FILE="theta.train.npz"
-LABEL_FILE="output/bow/full-labels.pickle"
-BOW_OUTDIR="output/bow"
+BOW_OUTDIR="output/bow/5000w"
+LABEL_FILE="${BOW_OUTDIR}/full-labels.pickle"
 
 # Docker run with environment variables:
 if [ -z $SONGS_PER_GENRE ]; then
@@ -60,8 +60,8 @@ time python scripts/preprocess_lyrics.py -i data/input/lyrics.csv \
 # echo ${a##n*k}
 # NOTE no comma
 
-for PARAMS in n10000k300 n10000k100 n10000k50 n10000k20 n10000k10; do
-#for PARAMS in n10000k10 n10000k20; do
+for PARAMS in w5000n5000k300 w5000n5000k100 w5000n5000k50 w5000n5000k20 w5000n5000k10; do
+for PARAMS in w5000n5000k100; do
 	OUTDIR_BASE="output/${TIMESTAMP}"
 	N_TOPICS=${PARAMS##n*k}
 	echo "##################################"

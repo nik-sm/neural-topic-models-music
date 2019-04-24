@@ -133,4 +133,5 @@ def main(vocab_size=2000):
     full_labels[~msk].to_pickle(os.path.join(outdir,"test-labels.pickle"))
 
 if __name__ == "__main__":
-    main()
+    #main()
+    main(vocab_size=5000)
