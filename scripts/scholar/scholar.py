@@ -263,6 +263,9 @@ class torchScholar(nn.Module):
         self.l1_beta_c_reg = config['l1_beta_c_reg']
         self.l1_beta_ci_reg = config['l1_beta_ci_reg']
         self.l2_prior_reg = config['l2_prior_reg']
+        self.kl_loss_coef = config['kl_loss_coef']
+        self.classification_loss_coef = config['classification_loss_coef']
+
         self.device = device
         self.classify_from_covars = classify_from_covars
 
@@ -491,7 +494,7 @@ class torchScholar(nn.Module):
         KLD = 0.5 * ((var_division + diff_term + logvar_division).sum(1) - self.n_topics)
 
         # combine
-        loss = (NL + KLD)
+        loss = (self.classification_loss_coef * NL + self.kl_loss_coef * KLD)
 
         # add regularization on prior
         if self.l2_prior_reg > 0 and self.n_prior_covars > 0:

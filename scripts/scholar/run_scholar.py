@@ -69,6 +69,10 @@ def main(args):
                       help='GPU to use: default=%default')
     parser.add_option('--seed', type=int, default=None,
                       help='Random seed: default=%default')
+    parser.add_option('--kl_loss_coef', type=float, default=1.0,
+                      help="coefficient for KL divergence in loss function")
+    parser.add_option("--classification_loss_coef", type=float, default=1.0,
+                      help="coefficient for classification loss in loss function")
 
     options, args = parser.parse_args(args)
 
@@ -143,7 +147,16 @@ def main(args):
     embeddings, update_embeddings = load_word_vectors(options, rng, vocab)
 
     # create the model
-    model = Scholar(network_architecture, alpha=options.alpha, learning_rate=options.learning_rate, init_embeddings=embeddings, update_embeddings=update_embeddings, init_bg=init_bg, adam_beta1=options.momentum, device=options.device, seed=seed, classify_from_covars=options.covars_predict)
+    model = Scholar(network_architecture,
+        alpha=options.alpha,
+        learning_rate=options.learning_rate,
+        init_embeddings=embeddings,
+        update_embeddings=update_embeddings,
+        init_bg=init_bg,
+        adam_beta1=options.momentum,
+        device=options.device,
+        seed=seed,
+        classify_from_covars=options.covars_predict)
 
     # train the model
     print("Optimizing full model")
@@ -390,6 +403,8 @@ def make_network(options, vocab_size, label_type=None, n_labels=0, n_prior_covar
              l2_prior_reg=options.l2_prior_covars,
              classifier_layers=1,
              use_interactions=options.interactions,
+             kl_loss_coef=options.kl_loss_coef,
+             classification_loss_coef=options.classification_loss_coef
              )
     return network_architecture
 
