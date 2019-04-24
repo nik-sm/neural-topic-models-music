@@ -73,6 +73,8 @@ def main(args):
                       help="coefficient for KL divergence in loss function")
     parser.add_option("--classification_loss_coef", type=float, default=1.0,
                       help="coefficient for classification loss in loss function")
+    parser.add_option("--reconstruction_loss_coef", type=float, default=1.0,
+                      help="coefficient for reconstruction loss in loss function")
 
     options, args = parser.parse_args(args)
 
@@ -404,7 +406,8 @@ def make_network(options, vocab_size, label_type=None, n_labels=0, n_prior_covar
              classifier_layers=1,
              use_interactions=options.interactions,
              kl_loss_coef=options.kl_loss_coef,
-             classification_loss_coef=options.classification_loss_coef
+             classification_loss_coef=options.classification_loss_coef,
+             reconstruction_loss_coef=options.reconstruction_loss_coef
              )
     return network_architecture
 
