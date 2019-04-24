@@ -11,22 +11,32 @@ set -euxo pipefail
 	#TypeError: object of type 'int' has no len()
 
 
-#DRY_RUN=
-#if [ "$#" -eq 1 ]; then
-#	if [ "$1" == "dryrun" ]; then
-#		shopt -s expand_aliases
-#		alias python="/bin/echo"
-#		alias echo="#"
-#		DRY_RUN=1
-#		python foobar
-#		echo barfoo
-#		#if [ -n ${DRY_RUN} ]; then
-#		#	echo "DRY RUN"
-#		#fi
-#	fi
-#fi
+# https://unix.stackexchange.com/questions/368246/cant-use-alias-in-script-even-if-i-define-it-just-above
+if [ "$#" -eq 1 ]; then
+	if [ "$1" == "dryrun" ]; then
+		# Intercept all calls to `python` and echo instead
+		python () {
+			/bin/echo WOULD RUN
+			/bin/echo python $@
 
-exit 1
+		}
+		#echo () {
+		#	echo WOULD RUN
+		#	printf "printing nothing"
+		#}
+		python foobar feebar -fimbar
+		echo barfoo
+		#if [ -n ${DRY_RUN} ]; then
+		#	echo "DRY RUN"
+		#fi
+	fi
+fi
+
+# NOTE - docker pid always 1
+#TIMESTAMP="$(date +"%Y_%m_%d")_$$"
+TIMESTAMP="$(date +"%Y_%m_%d_%s")"
+echo ${TIMESTAMP}
+
 
 echo "##################################"
 echo "BEGIN PIPELINE"
@@ -45,7 +55,8 @@ INFILE="data/input/lyrics.csv"
 PRODLDA_THETAS_FILE="theta_needsoftmax.pickle"
 SCHOLAR_THETAS_FILE="theta.train.npz"
 BOW_OUTDIR="output/bow/5000w"
-LABEL_FILE="${BOW_OUTDIR}/full-labels.pickle"
+FULL_LABEL_FILE="${BOW_OUTDIR}/full-labels.pickle"
+FULL_BOW_FILE="${BOW_OUTDIR}/full-bag-of-words.pickle"
 
 # Docker run with environment variables:
 if [ -z $SONGS_PER_GENRE ]; then
@@ -54,21 +65,6 @@ fi
 #if [ -z $N_TOPICS ]; then
 #  $N_TOPICS=20
 #fi
-
-# NOTE - docker pid always 1
-#TIMESTAMP="$(date +"%Y_%m_%d")_$$"
-TIMESTAMP="$(date +"%Y_%m_%d_%s")"
-echo ${TIMESTAMP}
-
-echo "##################################"
-echo "scripts/preprocess_lyrics.py"
-echo "##################################"
-test -f ${INFILE} || { echo "Missing input file!" ; exit 1; }
-test -d ${BOW_OUTDIR} || { echo "Making bow directory"; mkdir -p ${BOW_OUTDIR}; }
-#test -d ${PLOTS_DIR} || { echo "Making plots directory"; mkdir -p ${PLOTS_DIR}; }
-time python scripts/preprocess_lyrics.py -i data/input/lyrics.csv \
-                                         -o ${BOW_OUTDIR} \
-                                         --songs-per-genre ${SONGS_PER_GENRE}
 
 # See "substring removal": https://www.tldp.org/LDP/abs/html/string-manipulation.html
 # a="n10000k20"
@@ -103,7 +99,7 @@ for PARAMS in w5000n5000k100; do
 	OUT=${OUTDIR_BASE}/${PARAMS}/logr_scholar
 	test -d ${OUT} || { echo "making Scholar logr output dir"; mkdir -p ${OUT}; }
 	time python scripts/classify/logr_scholar.py --theta-file ${OUTDIR_BASE}/${PARAMS}/scholar/${SCHOLAR_THETAS_FILE} \
-																							 --label-file ${LABEL_FILE} \
+																							 --label-file ${FULL_LABEL_FILE} \
 																							 --output-dir ${OUT}
 
 
@@ -140,7 +136,7 @@ for PARAMS in w5000n5000k100; do
 	OUT=${OUTDIR_BASE}/${PARAMS}/logr_prodlda
 	test -d ${OUT} || { echo "making ProdLDA logr output dir"; mkdir -p ${OUT}; }
 	time python scripts/classify/logr_prodlda.py --theta-file ${OUTDIR_BASE}/${PARAMS}/prodlda/${PRODLDA_THETAS_FILE} \
-																							 --label-file ${LABEL_FILE} \
+																							 --label-file ${FULL_LABEL_FILE} \
 																							 --output-dir ${OUT}
 
 
