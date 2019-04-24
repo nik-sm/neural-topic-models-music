@@ -35,11 +35,7 @@ def init_gen(df, stop, stem):
     print("\tUsing all songs")
     #import pdb; pdb.set_trace()
     #print(dir(df[["index","genre","lyrics"]].iterrows()))
-    count=0
     for index, series in df[["index","genre","lyrics"]].iterrows():
-        count += 1
-        if count == 1000:
-            break
         genre = series.values[1]
         lyrics = series.values[2]
         #print("test: {}, {}".format(genre, lyrics))
