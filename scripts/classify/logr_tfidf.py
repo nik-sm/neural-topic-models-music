@@ -10,6 +10,9 @@ from gensim.models.word2vec import Word2Vec
 from time import time
 
 
+# Example usage:
+#  python scripts/classify/logr_tfidf.py --train-bow data/bow/train-bag-of-words.pickle --train-labels data/bow/train-labels.pickle --test-bow data/bow/test-bag-of-words.pickle --test-labels data/bow/test-labels.pickle
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--train-bow', action='store', help='train bag-of-words file', required=True)
@@ -31,7 +34,6 @@ def main():
     test_document_lengths = test_bow.sum(axis=1)[:, None] # broadcast this column vector for each word
     scaled_test_tf = test_bow / (1 + test_document_lengths)
 
-
     # NOTE - This will get used to make IDF for BOTH train and test
     train_df = (train_bow > 0).sum(axis=0) 
     train_idf = np.log(N_train_documents / (1 + train_df))[ None, :] # broadcast this vector for each row
@@ -47,8 +49,7 @@ def main():
     test_labels=np.load(args.test_labels, allow_pickle=True).values[:,1] # keep only the label column
     print("test_labels.shape", test_labels.shape)
 
-    
-
+    # Full TF-IDF
     clf = LogisticRegression(random_state=0, solver='lbfgs',
                              multi_class='multinomial').fit(train_tfidf, train_labels)
 
@@ -56,7 +57,7 @@ def main():
     print("TF-IDF-full ACCURACY: ", accuracy)
     print("tf-idf-full,{}".format(accuracy))
 
-
+    # Unscaled Bag-of-words
     clf = LogisticRegression(random_state=0, solver='lbfgs',
                              multi_class='multinomial').fit(train_bow, train_labels)
 
@@ -64,7 +65,7 @@ def main():
     print("BOW-full unscaled ACCURACY: ", accuracy)
     print("bow-full-unscaled,{}".format(accuracy))
 
-
+    # Scaled Bag-of-words
     clf = LogisticRegression(random_state=0, solver='lbfgs',
                              multi_class='multinomial').fit(scaled_train_tf, train_labels)
 
@@ -72,8 +73,7 @@ def main():
     print("BOW scaled ACCURACY: ", accuracy)
     print("bow-full-scaled,{}".format(accuracy))
 
-
-
+    # Low-rank TF-IDF
     for r in [10, 20, 50, 100, 300]:
         #if args.rank != 0:
         t0 = time()
@@ -83,33 +83,20 @@ def main():
         data_train_lo = svd.transform(train_tfidf)
         data_test_lo = svd.transform(test_tfidf)
 
-    #    print("Rank {} SVD explained {} percent of variance in train data".format(r, svd.explained_variance_ratio_.sum()))
-    #    #U, s, Vh = np.linalg.svd(data_train, full_matrices=False)
-    #    #U_lo = U[:, 0:rank]
-    #    #s_lo = s[0:rank, 0:rank]
-    #    #data_train = np.matmul(U_lo, s_lo)
-    #    #data_test = np.matmul(data_test, Vh.T[:,0:rank])
-    #    #print("U.shape: ", U.shape)
-    #    #print("s.shape: ", s.shape)
-    #    #print("Vh.shape: ", Vh.shape)
-    #    print("svd done in %0.3fs" % (time() - t0))
-
         print("data_train_lo.shape", data_train_lo.shape)
         print("data_test_lo.shape", data_test_lo.shape)
 
         clf = LogisticRegression(random_state=0, solver='lbfgs',
-                                 multi_class='multinomial').fit(data_train_lo, labels_train)
+                                 multi_class='multinomial').fit(data_train_lo, train_labels)
 
-        accuracy=str(clf.score(data_test_lo, labels_test))
+        accuracy=str(clf.score(data_test_lo, test_labels))
         print("TF-IDF ACCURACY: ", accuracy)
         print("{},tf-idf-svd,{}".format(r,accuracy))
-
 
     #with open(os.path.join(args.output_dir,"accuracy.txt"), 'w') as f:
     #    f.write(accuracy)
     #weights = clf.coef_
     #np.savetxt(os.path.join(args.output_dir,"weights.txt"), weights)
-
 
 if __name__ == '__main__':
     main()
