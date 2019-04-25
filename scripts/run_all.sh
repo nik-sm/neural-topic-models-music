@@ -179,7 +179,7 @@ OUTDIR_BASE=output/${TIMESTAMP}/semi
 test -d ${OUTDIR_BASE} || { echo "Making semi directory"; mkdir -p ${OUTDIR_BASE}; }
 ACCURACY_FILE=${OUTDIR_BASE}/accuracies.txt
 test -d ${OUTDIR_BASE} || { echo "making semi supervised output dir"; mkdir -p ${OUTDIR_BASE}; }
-for P in 0.2 0.5 0.8 1.0; do
+for P in 0.2 0.5 0.8; do
 #for P in 0.2 ; do
 	OUT=${OUTDIR_BASE}/${P}
 	test -d ${OUT} || { echo "Making semi directory"; mkdir -p ${OUT}; }
@@ -199,9 +199,10 @@ for P in 0.2 0.5 0.8 1.0; do
 		#for kl_loss in     1.0 ; do
 			for classification_loss in 1.0; do 
 			#for classification_loss in 1.0; do 
-				echo >> ${ACCURACY_FILE}
-				echo >> ${ACCURACY_FILE}
-				echo percent${P},recon${reconstr_loss},kl${kl_loss},cl${classification_loss} >> ${ACCURACY_FILE}
+				# TODO messy. parameters are printed in python by printing the output dir into accuracies.txt
+				#echo >> ${ACCURACY_FILE}
+				#echo >> ${ACCURACY_FILE}
+				#echo percent${P},recon${reconstr_loss},kl${kl_loss},cl${classification_loss} >> ${ACCURACY_FILE}
 
 				OUT2=${OUTDIR_BASE}/${P}/recon${reconstr_loss}/kl${kl_loss}/cl${classification_loss}
 				test -d ${OUT2} || { echo "making scholar semi supervised output dir"; mkdir -p ${OUT2}; }
@@ -228,3 +229,5 @@ done
 echo "##################################"
 echo "END PIPELINE"
 echo "##################################"
+
+# TODO - run tf-idf baseline in pipeline

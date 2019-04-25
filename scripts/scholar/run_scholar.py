@@ -755,7 +755,7 @@ def predict_labels_and_evaluate(model, X, Y, PC, TC, accuracy_file=None, output_
     accuracy = float(np.sum(predictions == np.argmax(Y, axis=1)) / float(len(Y)))
     if accuracy_file is not None:
         with open (accuracy_file, 'a') as a:
-            a.write(subset, "accuracy on labels = %0.4f" % accuracy)
+            a.write("params {}, {} accuracy on labels, = {}".format(output_dir, subset, accuracy))
     print(subset, "accuracy on labels = %0.4f" % accuracy)
     if output_dir is not None:
         fh.write_list_to_text([str(accuracy)], os.path.join(output_dir, 'accuracy.' + subset + '.txt'))
