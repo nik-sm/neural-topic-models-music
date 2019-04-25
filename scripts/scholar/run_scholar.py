@@ -69,11 +69,11 @@ def main(args):
                       help='GPU to use: default=%default')
     parser.add_option('--seed', type=int, default=None,
                       help='Random seed: default=%default')
-    parser.add_option('--classification_loss_coef', type=float, default=1.0,
+    parser.add_option('--classification-loss-coef', type=float, default=1.0,
                       help='coef for classification loss in training')
-    parser.add_option('--reconstr_loss_coef', type=float, default=1.0,
+    parser.add_option('--reconstr-loss-coef', type=float, default=1.0,
                       help='coef for reconstruction loss in training')
-    parser.add_option('--kl_loss_coef', type=float, default=1.0,
+    parser.add_option('--kl-loss-coef', type=float, default=1.0,
                       help='coef for kl divergence loss in training')
     parser.add_option('--accuracy-file', help='appends train and test accuracy to this file')
 
