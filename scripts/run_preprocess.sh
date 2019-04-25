@@ -27,6 +27,11 @@ if [ -z $SONGS_PER_GENRE ]; then
   echo "missing environment variable SONGS_PER_GENRE"
 	exit 1
 fi
+if [ -z $VOCAB_SIZE ]; then
+  echo "missing environment variable VOCAB_SIZE"
+	exit 1
+fi
+
 
 echo "##################################"
 echo "scripts/preprocess_lyrics.py"
@@ -37,4 +42,4 @@ test -d ${BOW_OUTDIR} || { echo "Making bow directory"; mkdir -p ${BOW_OUTDIR}; 
 time python scripts/preprocess_lyrics.py --infile data/input/lyrics.csv \
                                          --outdir ${BOW_OUTDIR} \
                                          --songs-per-genre ${SONGS_PER_GENRE} \
-																				 --vocab-size 10
+																				 --vocab-size ${VOCAB_SIZE}
