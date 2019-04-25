@@ -43,6 +43,7 @@ SCHOLAR_THETAS_FILE="theta.train.npz"
 BOW_OUTDIR="output/bow"
 FULL_LABEL_FILE="${BOW_OUTDIR}/full-labels.pickle"
 FULL_BOW_FILE="${BOW_OUTDIR}/full-bag-of-words.pickle"
+TRAIN_LABEL_FILE="${BOW_OUTDIR}/train-labels.pickle"
 
 # Docker run with environment variables:
 if [ -z $SONGS_PER_GENRE ]; then
@@ -182,12 +183,14 @@ for P in 0.2 0.5 0.8 1.0; do
 #for P in 0.2 ; do
 	OUT=${OUTDIR_BASE}/${P}
 	test -d ${OUT} || { echo "Making semi directory"; mkdir -p ${OUT}; }
-	time python scripts/make-semi-labels.py --infile ${FULL_LABEL_FILE} \
+	time python scripts/make-semi-labels.py --infile ${TRAIN_LABEL_FILE} \
                                           --outdir ${OUT} \
 																					--percent-supervise ${P}
 	# TODO - not hardcoded paths
 	ln -s ../../../bow/train-bag-of-words.pickle ${OUT}/semi-train-bag-of-words.pickle
 	ln -s ../../../bow/genre-number-mapping.pickle ${OUT}/genre-number-mapping.pickle
+	ln -s ../../../bow/test-bag-of-words.pickle ${OUT}/test-bag-of-words.pickle
+	ln -s ../../../bow/test-labels.pickle ${OUT}/test-labels.pickle
 
 
 	for reconstr_loss in 0.0 0.1 1.0 10.0; do 
