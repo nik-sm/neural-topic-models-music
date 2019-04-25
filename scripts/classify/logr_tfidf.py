@@ -19,7 +19,7 @@ def main():
     args = parser.parse_args()
     print("Running logr_word2vec with arguments: ", args)
 
-    tf=np.load(args.infile, allow_pickle=True).values[:, 1:] # drop INDEX column
+    tf=np.load(args.infile, allow_pickle=True).values[:, 1:] # drop index column
     N_documents = len(tf)
     document_lengths = tf.sum(axis=1)[:, None] # broadcast this column vector for each word
     scaled_tf = tf / (1 + document_lengths)

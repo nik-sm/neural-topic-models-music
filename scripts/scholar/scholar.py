@@ -263,6 +263,9 @@ class torchScholar(nn.Module):
         self.l1_beta_c_reg = config['l1_beta_c_reg']
         self.l1_beta_ci_reg = config['l1_beta_ci_reg']
         self.l2_prior_reg = config['l2_prior_reg']
+        self.classification_loss_coef = config['classification_loss_coef']
+        self.reconstr_loss_coef = config['reconstr_loss_coef']
+        self.kl_loss_coef = config['kl_loss_coef']
         self.device = device
         self.classify_from_covars = classify_from_covars
 
@@ -475,9 +478,14 @@ class torchScholar(nn.Module):
 
         # compute reconstruction loss
         NL = -(X * (X_recon+1e-10).log()).sum(1)
-        # compute label loss
+
+
+        # compute classification loss
+        # Labels in the input that are set to -1 are "unlabeled" rows. These will be the all zeros vector from run_scholar.
+        #  Then they will not contribute to the loss function here.
+        classification_l = 0
         if self.n_labels > 0:
-            NL += -(Y * (Y_recon+1e-10).log()).sum(1)
+            classification_l = -(Y * (Y_recon+1e-10).log()).sum(1)
 
         # compute KLD
         prior_var = prior_logvar.exp()
@@ -491,7 +499,7 @@ class torchScholar(nn.Module):
         KLD = 0.5 * ((var_division + diff_term + logvar_division).sum(1) - self.n_topics)
 
         # combine
-        loss = (NL + KLD)
+        loss = (self.reconstr_loss_coef * NL + self.kl_loss_coef * KLD + self.classification_loss_coef * classification_l)
 
         # add regularization on prior
         if self.l2_prior_reg > 0 and self.n_prior_covars > 0:

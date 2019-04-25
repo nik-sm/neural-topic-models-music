@@ -69,6 +69,13 @@ def main(args):
                       help='GPU to use: default=%default')
     parser.add_option('--seed', type=int, default=None,
                       help='Random seed: default=%default')
+    parser.add_option('--classification_loss_coef', type=float, default=1.0,
+                      help='coef for classification loss in training')
+    parser.add_option('--reconstr_loss_coef', type=float, default=1.0,
+                      help='coef for reconstruction loss in training')
+    parser.add_option('--kl_loss_coef', type=float, default=1.0,
+                      help='coef for kl divergence loss in training')
+    parser.add_option('--accuracy-file', help='appends train and test accuracy to this file')
 
     options, args = parser.parse_args(args)
 
@@ -169,13 +176,13 @@ def main(args):
     # evaluate accuracy on predicting labels
     if n_labels > 0:
         print("Predicting labels")
-        predict_labels_and_evaluate(model, train_X, train_labels, train_prior_covars, train_topic_covars, options.output_dir, subset='train')
+        predict_labels_and_evaluate(model, train_X, train_labels, train_prior_covars, train_topic_covars, options.accuracy_file, options.output_dir, subset='train')
 
         if dev_X is not None:
-            predict_labels_and_evaluate(model, dev_X, dev_labels, dev_prior_covars, dev_topic_covars, options.output_dir, subset='dev')
+            predict_labels_and_evaluate(model, dev_X, dev_labels, dev_prior_covars, dev_topic_covars, options.accuracy_file, options.output_dir, subset='dev')
 
         if test_X is not None:
-            predict_labels_and_evaluate(model, test_X, test_labels, test_prior_covars, test_topic_covars, options.output_dir, subset='test')
+            predict_labels_and_evaluate(model, test_X, test_labels, test_prior_covars, test_topic_covars, options.accuracy_file, options.output_dir, subset='test')
 
     # print label probabilities for each topic
     if n_labels > 0:
@@ -260,7 +267,8 @@ def load_labels(input_dir, input_prefix, row_selector, options):
             n_labels = len(label_names)
             labels = np.zeros((n_data,n_labels))
             for i in range(n_data):
-                labels[i,numeric_labels[i,1]] = 1
+                if numeric_labels[i,1] > 0:
+                    labels[i,numeric_labels[i,1]] = 1
             
             # select the rows that match the non-empty documents (from load_word_counts)
             labels = labels[row_selector, :]
@@ -398,6 +406,9 @@ def make_network(options, vocab_size, label_type=None, n_labels=0, n_prior_covar
              l2_prior_reg=options.l2_prior_covars,
              classifier_layers=1,
              use_interactions=options.interactions,
+             classification_loss_coef=options.classification_loss_coef,
+             reconstr_loss_coef=options.reconstr_loss_coef,
+             kl_loss_coef=options.kl_loss_coef
              )
     return network_architecture
 
@@ -736,12 +747,15 @@ def save_weights(output_dir, beta, bg, feature_names, sparsity_threshold=1e-5):
     fh.write_list_to_text(lines, topics_file)
 
 
-def predict_labels_and_evaluate(model, X, Y, PC, TC, output_dir=None, subset='train', batch_size=200):
+def predict_labels_and_evaluate(model, X, Y, PC, TC, accuracy_file=None, output_dir=None, subset='train', batch_size=200):
     # Predict labels for all instances using the classifier network and evaluate the accuracy
     pred_probs = predict_label_probs(model, X, PC, TC, batch_size, eta_bn_prop=0.0)
     np.savez(os.path.join(output_dir, 'pred_probs.' + subset + '.npz'), pred_probs=pred_probs)
     predictions = np.argmax(pred_probs, axis=1)
     accuracy = float(np.sum(predictions == np.argmax(Y, axis=1)) / float(len(Y)))
+    if accuracy_file is not None:
+        with open (accuracy_file, 'a') as a:
+            a.write(subset, "accuracy on labels = %0.4f" % accuracy)
     print(subset, "accuracy on labels = %0.4f" % accuracy)
     if output_dir is not None:
         fh.write_list_to_text([str(accuracy)], os.path.join(output_dir, 'accuracy.' + subset + '.txt'))
