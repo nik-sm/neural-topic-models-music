@@ -15,28 +15,17 @@ set -euxo pipefail
 if [ "$#" -eq 1 ]; then
 	if [ "$1" == "dryrun" ]; then
 		# Intercept all calls to `python` and echo instead
+		set +x
 		python () {
-			/bin/echo WOULD RUN
 			/bin/echo python $@
-
 		}
-		#echo () {
-		#	echo WOULD RUN
-		#	printf "printing nothing"
-		#}
-		python foobar feebar -fimbar
-		echo barfoo
-		#if [ -n ${DRY_RUN} ]; then
-		#	echo "DRY RUN"
-		#fi
 	fi
 fi
 
 # NOTE - docker pid always 1
 #TIMESTAMP="$(date +"%Y_%m_%d")_$$"
-TIMESTAMP="$(date +"%Y_%m_%d_%s")"
-echo ${TIMESTAMP}
-
+#TIMESTAMP="$(date +"%Y_%m_%d_%s")"
+TIMESTAMP="$(date +"%Y_%m_%d")"
 
 echo "##################################"
 echo "BEGIN PIPELINE"
@@ -46,35 +35,29 @@ echo "##################################"
 # Display library versions
 pip freeze
 
-## Input = lyrics.csv 
-## Output = full-bag-of-words.pickle, train-bag-of-words.pickle test-bag-of-words.pickle, full-labels.pickle, test-labels.pickle, train-labels.pickle
-## Maybe: stemmed_vocab.pickle (dictionary of stem:{set_of_input_words})
 command -v python3 > /dev/null 2>&1 || { echo "Missing Python3 install" >&2 ; exit 1; }
 
 INFILE="data/input/lyrics.csv"
 PRODLDA_THETAS_FILE="theta_needsoftmax.pickle"
 SCHOLAR_THETAS_FILE="theta.train.npz"
-BOW_OUTDIR="output/bow/5000w"
+BOW_OUTDIR="output/bow"
 FULL_LABEL_FILE="${BOW_OUTDIR}/full-labels.pickle"
 FULL_BOW_FILE="${BOW_OUTDIR}/full-bag-of-words.pickle"
 
 # Docker run with environment variables:
 if [ -z $SONGS_PER_GENRE ]; then
-  $SONGS_PER_GENRE=10
+  echo "Missing environment variable SONGS_PER_GENRE!"
+	exit 1
 fi
-#if [ -z $N_TOPICS ]; then
-#  $N_TOPICS=20
-#fi
 
 # See "substring removal": https://www.tldp.org/LDP/abs/html/string-manipulation.html
 # a="n10000k20"
 # echo ${a##n*k}
 # NOTE no comma
 
-#for PARAMS in w5000n5000k300 w5000n5000k100 w5000n5000k50 w5000n5000k20 w5000n5000k10; do
-for PARAMS in w5000n5000k100; do
+for PARAMS in k300 k100 k50 k20 k10; do
 	OUTDIR_BASE="output/${TIMESTAMP}"
-	N_TOPICS=${PARAMS##n*k}
+	N_TOPICS=${PARAMS##k}
 	echo "##################################"
 	echo "begin iteration. N_TOPICS=${N_TOPICS}"
 	echo "##################################"
@@ -121,7 +104,7 @@ for PARAMS in w5000n5000k100; do
 	echo "##################################"
 	OUT=${OUTDIR_BASE}/${PARAMS}/prodlda
 	test -d ${OUT} || { echo "making prodLDA output dir"; mkdir -p ${OUT}; }
-	time python scripts/prodlda/tf_run.py -i ${BOW_OUTDIR}/full-bag-of-words.pickle \
+	time python scripts/prodlda/tf_run.py -i ${FULL_BOW_FILE} \
 																				-o ${OUT} \
 																				-f 100 \
 																				-s 100 \
@@ -187,21 +170,48 @@ for PARAMS in w5000n5000k100; do
 done
 
 echo "##################################"
+echo "BEGIN SEMI-SUPERVISED MODELS"
+echo "##################################"
+
+OUTDIR_BASE=output/${TIMESTAMP}/semi
+ACCURACY_FILE=${OUTDIR_BASE}/accuracies.txt
+test -d ${OUT} || { echo "making semi supervised output dir"; mkdir -p ${OUT}; }
+for P in 0.2 0.5 0.8 1.0; do
+	OUT=${OUTDIR_BASE}/${P}
+	time python scripts/make-semi-labels.py --infile ${FULL_BOW_FILE} \
+                                          --outdir ${OUT} \
+																					--percent-supervise ${P}
+
+
+	for reconstr_loss in 0.0 0.1 1.0 10.0; do 
+		for kl_loss in     0.0 0.1 1.0 10.0; do  
+			for classification_loss in 1.0; do 
+				echo >> ${ACCURACY_FILE}
+				echo >> ${ACCURACY_FILE}
+				echo percent${P},recon${reconstr_loss},kl${kl_loss},cl${classification_loss} >> ${ACCURACY_FILE}
+
+				OUT2=${OUTDIR_BASE}/${P}/recon${reconstr_loss}/kl${kl_loss}/cl${classification_loss}
+				test -d ${OUT2} || { echo "making scholar semi supervised output dir"; mkdir -p ${OUT2}; }
+				time python scripts/scholar/run_scholar.py ${BOW_OUTDIR} \
+																									 -o ${OUT2} \
+																									 --train-prefix semi-train \
+																									 --test-prefix "test" \
+																									 --label genre \
+																									 -k ${N_TOPICS} \
+																									 --epochs 90 \
+																									 --reconstr-loss-coef ${reconstr_loss} \
+																									 --kl_loss_coef ${kl_loss} \
+																									 --classification_loss_coef ${classification_loss} \
+			                                             --accuracy-file ${ACCURACY_FILE}
+
+			done
+		done
+	done
+
+
+done
+
+
+echo "##################################"
 echo "END PIPELINE"
 echo "##################################"
-# Generate TF/IDF Features
-#time python scripts/tf_idf.py -i ${BOW_OUTDIR}/full-bag-of-words.pickle
-
-# Run LogR on each of the following feature sets:
-
-## ScholarU
-
-## prodLDA
-
-## TF/IDF
-
-## "Raw" bag-of-words
-
-## word2vec
-
-## doc2vec

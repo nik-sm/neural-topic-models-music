@@ -19,15 +19,15 @@ def main():
     theta = thetas['theta']
 
     theta_df = pd.DataFrame(data=theta)
-    ids_df = pd.DataFrame(data=ids, columns =['INDEX'])
+    ids_df = pd.DataFrame(data=ids, columns =['index'])
 
     theta_id = pd.concat([theta_df, ids_df],axis = 1)
     labels = pd.read_pickle(args.label_file)
     labels = labels.drop_duplicates()
 
-    joint = theta_id.merge(labels, on='INDEX', how = 'left')
+    joint = theta_id.merge(labels, on='index', how = 'left')
 
-    full_data = joint.drop(['INDEX','genre'],axis= 1).values
+    full_data = joint.drop(['index','genre'],axis= 1).values
 
     full_labels = joint['genre'].values   
 

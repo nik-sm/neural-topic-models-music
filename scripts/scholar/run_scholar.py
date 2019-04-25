@@ -75,6 +75,7 @@ def main(args):
                       help='coef for reconstruction loss in training')
     parser.add_option('--kl_loss_coef', type=float, default=1.0,
                       help='coef for kl divergence loss in training')
+    parser.add_option('--accuracy-file', help='appends train and test accuracy to this file')
 
     options, args = parser.parse_args(args)
 
@@ -175,13 +176,13 @@ def main(args):
     # evaluate accuracy on predicting labels
     if n_labels > 0:
         print("Predicting labels")
-        predict_labels_and_evaluate(model, train_X, train_labels, train_prior_covars, train_topic_covars, options.output_dir, subset='train')
+        predict_labels_and_evaluate(model, train_X, train_labels, train_prior_covars, train_topic_covars, options.output_dir, accuracy_file=options.accuracy_file, subset='train')
 
         if dev_X is not None:
-            predict_labels_and_evaluate(model, dev_X, dev_labels, dev_prior_covars, dev_topic_covars, options.output_dir, subset='dev')
+            predict_labels_and_evaluate(model, dev_X, dev_labels, dev_prior_covars, dev_topic_covars, options.output_dir, accuracy_file=options.accuracy_file, subset='dev')
 
         if test_X is not None:
-            predict_labels_and_evaluate(model, test_X, test_labels, test_prior_covars, test_topic_covars, options.output_dir, subset='test')
+            predict_labels_and_evaluate(model, test_X, test_labels, test_prior_covars, test_topic_covars, options.output_dir, accuracy_file=options.accuracy_file, subset='test')
 
     # print label probabilities for each topic
     if n_labels > 0:
@@ -225,7 +226,7 @@ def load_word_counts(input_dir, input_prefix, vocab=None):
     no_index = df.drop(df.columns[0], axis = 1)#drop the index
     X = no_index.values
     vocab = no_index.columns
-    ids = df['INDEX'].values
+    ids = df['index'].values
 #    print("Loading data")
 #    # laod the word counts and convert to a dense matrix
 #    temp = fh.load_sparse(os.path.join(input_dir, input_prefix + '.npz')).todense()
@@ -745,12 +746,14 @@ def save_weights(output_dir, beta, bg, feature_names, sparsity_threshold=1e-5):
     fh.write_list_to_text(lines, topics_file)
 
 
-def predict_labels_and_evaluate(model, X, Y, PC, TC, output_dir=None, subset='train', batch_size=200):
+def predict_labels_and_evaluate(model, X, Y, PC, TC, output_dir=None, accuracy_file, subset='train', batch_size=200):
     # Predict labels for all instances using the classifier network and evaluate the accuracy
     pred_probs = predict_label_probs(model, X, PC, TC, batch_size, eta_bn_prop=0.0)
     np.savez(os.path.join(output_dir, 'pred_probs.' + subset + '.npz'), pred_probs=pred_probs)
     predictions = np.argmax(pred_probs, axis=1)
     accuracy = float(np.sum(predictions == np.argmax(Y, axis=1)) / float(len(Y)))
+    with open (accuracy_file, 'a') as a:
+        a.write(subset, "accuracy on labels = %0.4f" % accuracy)
     print(subset, "accuracy on labels = %0.4f" % accuracy)
     if output_dir is not None:
         fh.write_list_to_text([str(accuracy)], os.path.join(output_dir, 'accuracy.' + subset + '.txt'))
