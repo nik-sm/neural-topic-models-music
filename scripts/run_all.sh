@@ -12,15 +12,15 @@ set -euxo pipefail
 
 
 # https://unix.stackexchange.com/questions/368246/cant-use-alias-in-script-even-if-i-define-it-just-above
-if [ "$#" -eq 1 ]; then
-	if [ "$1" == "dryrun" ]; then
-		# Intercept all calls to `python` and echo instead
-		set +x
-		python () {
-			/bin/echo python $@
-		}
-	fi
-fi
+#if [ "$#" -eq 1 ]; then
+#	if [ "$1" == "dryrun" ]; then
+#		# Intercept all calls to `python` and echo instead
+#		set +x
+#		python () {
+#			/bin/echo python $@
+#		}
+#	fi
+#fi
 
 # NOTE - docker pid always 1
 #TIMESTAMP="$(date +"%Y_%m_%d")_$$"
@@ -56,6 +56,7 @@ fi
 # NOTE no comma
 
 for PARAMS in k300 k100 k50 k20 k10; do
+#for PARAMS in k10 ; do
 	OUTDIR_BASE="output/${TIMESTAMP}"
 	N_TOPICS=${PARAMS##k}
 	echo "##################################"
@@ -73,8 +74,7 @@ for PARAMS in k300 k100 k50 k20 k10; do
 																						 -o ${OUT} \
 																						 --train-prefix full \
 																						 -k ${N_TOPICS} \
-																						 --epochs 100
-
+																						 --epochs 40
 
 	echo "##################################"
 	echo "scripts/classify/logr_scholar.py"
@@ -97,7 +97,7 @@ for PARAMS in k300 k100 k50 k20 k10; do
 																						 --test-prefix "test" \
 																						 --label genre \
 																						 -k ${N_TOPICS} \
-																						 --epochs 100
+																						 --epochs 40
 
 	echo "##################################"
 	echo "scripts/prodlda/tf_run.py"
@@ -108,7 +108,7 @@ for PARAMS in k300 k100 k50 k20 k10; do
 																				-o ${OUT} \
 																				-f 100 \
 																				-s 100 \
-																				-e 100 \
+																				-e 40 \
 																				-r 0.002 \
 																				-b 200 \
 																				-k ${N_TOPICS}
@@ -174,18 +174,24 @@ echo "BEGIN SEMI-SUPERVISED MODELS"
 echo "##################################"
 
 OUTDIR_BASE=output/${TIMESTAMP}/semi
+test -d ${OUTDIR_BASE} || { echo "Making semi directory"; mkdir -p ${OUTDIR_BASE}; }
 ACCURACY_FILE=${OUTDIR_BASE}/accuracies.txt
 test -d ${OUT} || { echo "making semi supervised output dir"; mkdir -p ${OUT}; }
 for P in 0.2 0.5 0.8 1.0; do
+#for P in 0.2 ; do
 	OUT=${OUTDIR_BASE}/${P}
-	time python scripts/make-semi-labels.py --infile ${FULL_BOW_FILE} \
+	test -d ${OUT} || { echo "Making semi directory"; mkdir -p ${OUT}; }
+	time python scripts/make-semi-labels.py --infile ${FULL_LABEL_FILE} \
                                           --outdir ${OUT} \
 																					--percent-supervise ${P}
 
 
 	for reconstr_loss in 0.0 0.1 1.0 10.0; do 
+	#for reconstr_loss in 1.0 ; do
 		for kl_loss in     0.0 0.1 1.0 10.0; do  
+		#for kl_loss in     1.0 ; do
 			for classification_loss in 1.0; do 
+			#for classification_loss in 1.0; do 
 				echo >> ${ACCURACY_FILE}
 				echo >> ${ACCURACY_FILE}
 				echo percent${P},recon${reconstr_loss},kl${kl_loss},cl${classification_loss} >> ${ACCURACY_FILE}
@@ -198,7 +204,7 @@ for P in 0.2 0.5 0.8 1.0; do
 																									 --test-prefix "test" \
 																									 --label genre \
 																									 -k ${N_TOPICS} \
-																									 --epochs 90 \
+																									 --epochs 40 \
 																									 --reconstr-loss-coef ${reconstr_loss} \
 																									 --kl_loss_coef ${kl_loss} \
 																									 --classification_loss_coef ${classification_loss} \

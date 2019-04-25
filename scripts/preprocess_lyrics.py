@@ -35,9 +35,14 @@ def init_gen(df, stop, stem):
     print("\tUsing all songs")
     #import pdb; pdb.set_trace()
     #print(dir(df[["index","genre","lyrics"]].iterrows()))
+
+#    count=0
     for index, series in df[["index","genre","lyrics"]].iterrows():
-        genre = series.values[1]
-        lyrics = series.values[2]
+#        count += 1
+#        if count == 10000:
+#            break
+        genre = series['genre']
+        lyrics = series['lyrics']
         #print("test: {}, {}".format(genre, lyrics))
         yield (index, genre, stem_and_count(lyrics, stopwordsSet=stop, stemmer=stem, doStem=False)) 
 
@@ -100,6 +105,7 @@ def main():
     column_headers.append("genre")
     column_headers.extend(top_K)
     bag_of_words_df.columns = column_headers # Fix column headers (TODO is this a safe approach?)
+    bag_of_words_df.index = bag_of_words_df['index']
 
     # At this point, bag_of_words_df contains a header like this:
     # index genre word1 word1 ...
@@ -109,7 +115,6 @@ def main():
     counts_cols_only = ["index"]
     counts_cols_only.extend(all_columns[2:])
 
-    print("made it")
     seed=0
     by_genre = []
     for g in chosen_genres:
@@ -142,13 +147,13 @@ def main():
     bag_of_words_df[counts_cols_only][~msk].to_pickle(os.path.join(args.outdir,"test-bag-of-words.pickle"))
 
     print("\ttest-labels.pickle")
-    bag_of_words_df[["index", "genre"]][~msk].to_pickle(os.path.join(args.outdir,"test-labels.pickle"))
+    bag_of_words_df[["index", "genre"]][~msk].replace({"genre": genre_to_number}).to_pickle(os.path.join(args.outdir,"test-labels.pickle"))
 
     print("\tresample train data")
     seed=1
     by_genre = []
     for g in chosen_genres:
-        by_genre.append(bag_of_words_df.loc[msk][bag_of_words_df['genre'] == g].sample(n=args.songs_per_genre,replace=True,random_state=seed))
+        by_genre.append(bag_of_words_df.loc[msk][bag_of_words_df[msk]['genre'] == g].sample(n=args.songs_per_genre,replace=True,random_state=seed))
     upsampled = pd.concat(by_genre)
     del(by_genre)
     del(bag_of_words_df)
@@ -157,7 +162,7 @@ def main():
     upsampled[counts_cols_only].to_pickle(os.path.join(args.outdir,"train-bag-of-words.pickle"))
 
     print("\ttrain-labels.pickle")
-    upsampled[["index","genre"]].to_pickle(os.path.join(args.outdir,"train-labels.pickle"))
+    upsampled[["index","genre"]].replace({"genre": genre_to_number}).to_pickle(os.path.join(args.outdir,"train-labels.pickle"))
 
 if __name__ == "__main__":
     main()
