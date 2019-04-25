@@ -61,7 +61,7 @@ time python scripts/preprocess_lyrics.py -i data/input/lyrics.csv \
 # NOTE no comma
 
 for PARAMS in w5000n5000k300 w5000n5000k100 w5000n5000k50 w5000n5000k20 w5000n5000k10; do
-for PARAMS in w5000n5000k100; do
+# for PARAMS in w5000n5000k100; do
 	OUTDIR_BASE="output/${TIMESTAMP}"
 	N_TOPICS=${PARAMS##n*k}
 	echo "##################################"
