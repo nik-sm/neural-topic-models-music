@@ -1,9 +1,10 @@
 import os
 from time import gmtime, strftime
 from gensim.models.callbacks import CallbackAny2Vec
+import datetime
 
 def makeExpDir():
-    expPath = os.path.join("../results/experiments/",strftime("%Y_%m_%d_%H_%M_%S",gmtime()))
+    expPath = os.path.join("../results/experiments/",str(datetime.datetime.now()))
     expPath += "_1"
     while os.path.isfile(expPath):
         expPath = expPath[:-1]+expPath[-1]+1
