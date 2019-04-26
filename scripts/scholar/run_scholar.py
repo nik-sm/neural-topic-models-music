@@ -267,7 +267,7 @@ def load_labels(input_dir, input_prefix, row_selector, options):
             n_labels = len(label_names)
             labels = np.zeros((n_data,n_labels))
             for i in range(n_data):
-                if numeric_labels[i,1] > 0:
+                if numeric_labels[i,1] >= 0: # Note -1 used for unlabeled examples during semi-supervised training
                     labels[i,numeric_labels[i,1]] = 1
             
             # select the rows that match the non-empty documents (from load_word_counts)
