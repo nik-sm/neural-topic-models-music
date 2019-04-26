@@ -16,27 +16,32 @@ def main():
     print("Running logr_word2vec with arguments: ", args)
 
     model=Word2Vec.load(args.model)
-    full_labels=np.load(args.label_file)
+    full_labels=np.load(args.label_file, allow_pickle=True)
 
     # get average word vector for each song
 
     n_total_words = 0
     n_dropped_words = 0
-    corpus = np.load(args.corpus)
+    corpus = np.load(args.corpus, allow_pickle=True)
     avg_vectors = []
-    for song in corpus:
+    for i, song in enumerate(corpus):
         n_total_words += len(song)
         tmp = []
+        song_length = len(song)
+        n_song_dropped = 0
         for word in song:
             if word in model.wv.vocab:
                 tmp.append(model.wv[word])
             else:
+                n_song_dropped += 1
                 n_dropped_words += 1
-        avg_vectors.append(np.mean(np.asanyarray(tmp), axis=0))
+        if n_song_dropped == song_length:
+            avg_vectors.append(np.zeros(model.vector_size))
+        else:
+            avg_vectors.append(np.mean(np.asanyarray(tmp), axis=0))
 
     print("total words: ", n_total_words)
     print("dropped words: ", n_dropped_words)
-
 
     data_train,data_test,labels_train,labels_test = train_test_split(avg_vectors, full_labels, test_size=0.2)
 

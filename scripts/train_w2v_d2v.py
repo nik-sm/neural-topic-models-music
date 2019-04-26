@@ -15,7 +15,7 @@ def main():
 
 
     print("Begin Word2Vec...")
-    oldcorpus = np.load(args.infile)
+    oldcorpus = np.load(args.infile, allow_pickle=True)
     #print("OLDCORPUS: ", oldcorpus)
     corpus=[]
     for l in oldcorpus:
@@ -31,7 +31,7 @@ def main():
             "window":5,
             "min_count":2,
             "workers":4,
-            "epochs":50
+            "epochs": 100
     }
 
     model = Word2Vec(sentences=corpus, 
@@ -50,7 +50,7 @@ def main():
     print("Begin Doc2Vec...")
     hParams = {
             "doc2VecSize" : args.dimension,
-            "epochs" : 50,
+            "epochs" : 100,
             "min_count" : 2
     }
 

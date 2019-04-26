@@ -14,7 +14,7 @@ def main():
     args = parser.parse_args()
     print("Running logr_scholar with arguments: ", args)
 
-    thetas = np.load(args.theta_file)
+    thetas = np.load(args.theta_file, allow_pickle=True)
     ids  = thetas['ids']
     theta = thetas['theta']
 
