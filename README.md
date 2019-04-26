@@ -1,3 +1,7 @@
+# Credits
+
+Code adapted from [SCHOLAR](https://github.com/dallascard/scholar) and [ProdLDA](https://github.com/akashgit/autoencoding_vi_for_topic_models).
+
 # Input 
 
 The script expects a CSV input file of song data:
@@ -46,17 +50,9 @@ docker build -t music-pipeline .
 ## Run Docker Container
 ```bash
 time docker run -e SONGS_PER_GENRE=30 -v $(pwd)/output/:/music/output/ music-pipeline
-
 ```
 
 # TODO
-- cite sources for code!
-- Confirm how thetas are extracted for prodLDA in tf_run.py and tf_model.py
-- confirm that word counts and song labels are correct by taking a single song and tracking it from the end all the way back to the beginning
-- ADAM instead of LBFGS?
-- Consolidate other repos? https://github.com/xyzzzfred/scholar.git, https://github.com/nik-sm/pytorch-avitm
-- add a "dry-run" mode that generates the command line invocations, so that individual steps could be run by hand, by doing:
-	```bash
-	alias python=/bin/echo
-	alias echo=#
-	```
+- Update Docker pipeline
+- Deduplicate files
+- Incorporate final baselines and visualizations into pipeline
