@@ -69,6 +69,13 @@ def main(args):
                       help='GPU to use: default=%default')
     parser.add_option('--seed', type=int, default=None,
                       help='Random seed: default=%default')
+    parser.add_option('--classification-loss-coef', type=float, default=1.0,
+                      help='coef for classification loss in training')
+    parser.add_option('--reconstr-loss-coef', type=float, default=1.0,
+                      help='coef for reconstruction loss in training')
+    parser.add_option('--kl-loss-coef', type=float, default=1.0,
+                      help='coef for kl divergence loss in training')
+    parser.add_option('--accuracy-file', help='appends train and test accuracy to this file')
 
     options, args = parser.parse_args(args)
 
@@ -169,13 +176,13 @@ def main(args):
     # evaluate accuracy on predicting labels
     if n_labels > 0:
         print("Predicting labels")
-        predict_labels_and_evaluate(model, train_X, train_labels, train_prior_covars, train_topic_covars, options.output_dir, subset='train')
+        predict_labels_and_evaluate(model, train_X, train_labels, train_prior_covars, train_topic_covars, options.accuracy_file, options.output_dir, subset='train')
 
         if dev_X is not None:
-            predict_labels_and_evaluate(model, dev_X, dev_labels, dev_prior_covars, dev_topic_covars, options.output_dir, subset='dev')
+            predict_labels_and_evaluate(model, dev_X, dev_labels, dev_prior_covars, dev_topic_covars, options.accuracy_file, options.output_dir, subset='dev')
 
         if test_X is not None:
-            predict_labels_and_evaluate(model, test_X, test_labels, test_prior_covars, test_topic_covars, options.output_dir, subset='test')
+            predict_labels_and_evaluate(model, test_X, test_labels, test_prior_covars, test_topic_covars, options.accuracy_file, options.output_dir, subset='test')
 
     # print label probabilities for each topic
     if n_labels > 0:
@@ -215,7 +222,7 @@ def main(args):
 #    return X, vocab, row_selector, ids
 
 def load_word_counts(input_dir, input_prefix, vocab=None):    
-    df = pd.read_pickle(os.path.join(input_dir, input_prefix+'.pickle'))
+    df = pd.read_pickle(os.path.join(input_dir, input_prefix+'-bag-of-words.pickle'))
     no_index = df.drop(df.columns[0], axis = 1)#drop the index
     X = no_index.values
     vocab = no_index.columns
@@ -248,12 +255,21 @@ def load_labels(input_dir, input_prefix, row_selector, options):
     n_labels = 0
     # load the label file if given
     if options.labels is not None:
-        label_file = os.path.join(input_dir, input_prefix + '.' + options.labels + '.csv')
+        label_file = os.path.join(input_dir, input_prefix + '-' + 'labels' + '.pickle')
         if os.path.exists(label_file):
             print("Loading labels from", label_file)
-            temp = pd.read_csv(label_file, header=0, index_col=0)
-            label_names = temp.columns
-            labels = np.array(temp.values)
+            temp = pd.read_pickle(label_file)
+            mapping_file = os.path.join(input_dir,'genre-number-mapping.pickle')
+            mapping = pd.read_pickle(mapping_file)
+            label_names = list(mapping.keys())
+            numeric_labels = np.array(temp.values)
+            n_data = len(numeric_labels)
+            n_labels = len(label_names)
+            labels = np.zeros((n_data,n_labels))
+            for i in range(n_data):
+                if numeric_labels[i,1] >= 0: # Note -1 used for unlabeled examples during semi-supervised training
+                    labels[i,numeric_labels[i,1]] = 1
+            
             # select the rows that match the non-empty documents (from load_word_counts)
             labels = labels[row_selector, :]
             n, n_labels = labels.shape
@@ -390,11 +406,14 @@ def make_network(options, vocab_size, label_type=None, n_labels=0, n_prior_covar
              l2_prior_reg=options.l2_prior_covars,
              classifier_layers=1,
              use_interactions=options.interactions,
+             classification_loss_coef=options.classification_loss_coef,
+             reconstr_loss_coef=options.reconstr_loss_coef,
+             kl_loss_coef=options.kl_loss_coef
              )
     return network_architecture
 
 
-def train(model, network_architecture, X, Y, PC, TC, batch_size=200, training_epochs=100, display_step=10, X_dev=None, Y_dev=None, PC_dev=None, TC_dev=None, bn_anneal=True, init_eta_bn_prop=1.0, rng=None, min_weights_sq=1e-7):
+def train(model, network_architecture, X, Y, PC, TC, batch_size=200, training_epochs=100, display_step=1, X_dev=None, Y_dev=None, PC_dev=None, TC_dev=None, bn_anneal=True, init_eta_bn_prop=1.0, rng=None, min_weights_sq=1e-7):
     # Train the model
     n_train, vocab_size = X.shape
     mb_gen = create_minibatch(X, Y, PC, TC, batch_size=batch_size, rng=rng)
@@ -728,12 +747,15 @@ def save_weights(output_dir, beta, bg, feature_names, sparsity_threshold=1e-5):
     fh.write_list_to_text(lines, topics_file)
 
 
-def predict_labels_and_evaluate(model, X, Y, PC, TC, output_dir=None, subset='train', batch_size=200):
+def predict_labels_and_evaluate(model, X, Y, PC, TC, accuracy_file=None, output_dir=None, subset='train', batch_size=200):
     # Predict labels for all instances using the classifier network and evaluate the accuracy
     pred_probs = predict_label_probs(model, X, PC, TC, batch_size, eta_bn_prop=0.0)
     np.savez(os.path.join(output_dir, 'pred_probs.' + subset + '.npz'), pred_probs=pred_probs)
     predictions = np.argmax(pred_probs, axis=1)
     accuracy = float(np.sum(predictions == np.argmax(Y, axis=1)) / float(len(Y)))
+    if accuracy_file is not None:
+        with open (accuracy_file, 'a') as a:
+            a.write("params {}, {} accuracy on labels, = {}\n".format(output_dir, subset, accuracy))
     print(subset, "accuracy on labels = %0.4f" % accuracy)
     if output_dir is not None:
         fh.write_list_to_text([str(accuracy)], os.path.join(output_dir, 'accuracy.' + subset + '.txt'))
@@ -741,7 +763,7 @@ def predict_labels_and_evaluate(model, X, Y, PC, TC, output_dir=None, subset='tr
 
 def print_topic_label_associations(options, label_names, model, n_prior_covars, n_topic_covars):
     # Print associations between topics and labels
-    if options.n_labels > 0 and options.n_labels < 7:
+    if options.n_labels > 0 and options.n_labels < 14:
         print("Label probabilities based on topics")
         print("Labels:", ' '.join([name for name in label_names]))
     probs_list = []
@@ -789,4 +811,5 @@ def save_document_representations(model, X, Y, PC, TC, ids, output_dir, partitio
 
 if __name__ == '__main__':
     main(sys.argv[1:])
+
 
